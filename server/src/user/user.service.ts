@@ -25,7 +25,7 @@ export class UserService {
     const { username, password } = UserDTO;
     const user : IUser = await this.userModel
       .findOne({ username })
-      .select('username password');
+      .select('username email password files');
     if(!user) {
       throw new HttpException('User does not exists', HttpStatus.BAD_REQUEST);
     }

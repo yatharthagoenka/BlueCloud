@@ -1,7 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Connection, Model } from 'mongoose';
-import { IRole, IUser } from '../interfaces';
+import { UserService } from './user.service';
 
 const sampleUsers = [
   { email: 'uh@gmail.com', username: 'uh', password: '111', createdAt: Date.now()},
@@ -12,28 +12,17 @@ const sampleUsers = [
 export class DBInitService implements OnModuleInit {
   constructor(
     @InjectConnection() private connection: Connection,
-    @InjectModel('User') private readonly userModel: Model<IUser>,
-    // @InjectModel('Role') private readonly roleModel: Model<IRole>,
+    private userService: UserService
   ) {}
 
   async onModuleInit() {
     if (process.env.DB_INIT === 'true') {
-      await this.userModel.collection.drop();
-
-      // const sampleRoles = [
-      //   { name: 'viewer'},
-      //   { name: 'editor'},
-      //   { name: 'owner'},
-      // ];
+      await this.connection.dropCollection('users');
 
       for (const user of sampleUsers) {
-        await this.userModel.create(user);
+        await this.userService.create(user);
+        console.log(`User created: ${user.username}`);
       }
-
-
-      // for (const role of sampleRoles) {
-      //   await this.roleModel.create(role);
-      // }
 
       console.log('Database initialization complete');
     }
