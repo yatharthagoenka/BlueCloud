@@ -1,0 +1,35 @@
+version: '3'
+services:
+  db:
+    container_name: db_1
+    image: mongo:4.4
+    ports:
+      - "27015:27017"
+    volumes:
+      - mongo-data:/data/db
+  app1:
+    image: server_app
+    container_name: app_1
+    build: .
+    ports:
+      - "3001:3001"
+    environment:
+      - DB_INIT=false
+      - SERVER_PORT=3001
+      - MONGO_URI=mongodb://db:27017
+    depends_on:
+      - db
+  app2:
+    image: server_app
+    container_name: app_2
+    build: .
+    ports:
+      - "3002:3002"
+    environment:
+      - DB_INIT=false
+      - SERVER_PORT=3002
+      - MONGO_URI=mongodb://db:27017
+    depends_on:
+      - db
+volumes:
+  mongo-data:
