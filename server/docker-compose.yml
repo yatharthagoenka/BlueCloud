@@ -1,4 +1,7 @@
 version: '3'
+networks:
+  bcloud-net:
+    external: true
 services:
   db:
     container_name: db_1
@@ -7,6 +10,8 @@ services:
       - "27015:27017"
     volumes:
       - mongo-data:/data/db
+    networks:
+      - bcloud-net
   app1:
     image: server_app
     container_name: app_1
@@ -19,6 +24,8 @@ services:
       - MONGO_URI=mongodb://db:27017
     depends_on:
       - db
+    networks:
+      - bcloud-net
   app2:
     image: server_app
     container_name: app_2
@@ -31,5 +38,7 @@ services:
       - MONGO_URI=mongodb://db:27017
     depends_on:
       - db
+    networks:
+      - bcloud-net
 volumes:
   mongo-data:
