@@ -1,10 +1,7 @@
 import * as mongoose from 'mongoose';
 import * as bcrypt from 'bcrypt';
-import { ObjectId } from 'mongodb';
-
-var Gems = new mongoose.Schema({
-    index: Number
-});
+import { IRole } from 'src/interfaces';
+import { FileSchema } from 'src/files/schema/file.schema';
 
 export const UserSchema = new mongoose.Schema({
     username:{
@@ -21,8 +18,20 @@ export const UserSchema = new mongoose.Schema({
         type:String,
         required:true
     },
-    files:[Gems],
-    createdAt: Date
+    files:[FileSchema],
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
+},
+    {
+    toJSON: {
+      transform: (_, ret) => {
+        delete ret.__v;
+        delete ret.password;
+        return ret;
+      },
+    },
 })
 
 UserSchema.pre('save', async function(next) {

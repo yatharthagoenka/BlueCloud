@@ -10,19 +10,22 @@ export interface IUser extends Document {
     createdAt: Date
 }
 
-export interface IPayload{
-    username:string
-}
-
-export interface IRole{
-    _id: ObjectId
-    name: string
+export enum IRole{
+    VIEWER = 'viewer',
+    EDITOR = 'editor',
+    OWNER = 'owner',
 }
 
 export interface IFile{
     _id: ObjectId
+    role: IRole
     gems:{
         _id: ObjectId
         index: number
+        name: string
     }[]
+}
+
+export interface IPayload{
+    username:string
 }

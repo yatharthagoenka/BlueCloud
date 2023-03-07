@@ -23,7 +23,7 @@ export class AuthController {
     
     @Post('login')
     async login(@Body() loginDTO: LoginDTO) {
-      const user : IUser = await this.userService.findByLogin(loginDTO);
+      const user = await this.userService.findByLogin(loginDTO);
       const payload : IPayload = {
         username: user.username,
       };
