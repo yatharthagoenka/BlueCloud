@@ -13,7 +13,7 @@ import { FilesModule } from './files/files.module';
     ConfigModule.forRoot(),
     MongooseModule.forRootAsync({
       useFactory: () => ({
-        uri: process.env.DB_CONN_STRING,
+        uri: process.env.MONGO_URI,
         dbName: process.env.DB_NAME,
       }),
     }),

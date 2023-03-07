@@ -34,5 +34,4 @@ export class AuthController {
         throw new BadRequestException('Invalid request. Try again.');
       }
     }
-
 }
