@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
 import { RegisterDTO, LoginDTO } from './dto/auth.dto';
 import { AuthService } from './auth.service';
 import { UserService } from 'src/user/user.service';
@@ -27,8 +27,12 @@ export class AuthController {
       const payload : IPayload = {
         username: user.username,
       };
-      const token = await this.authService.signPayload(payload);
-      return { user, token};
+      try{
+        const token = await this.authService.signPayload(payload);
+        return { user, token};
+      }catch (error: any) {
+        throw new BadRequestException('Invalid request. Try again.');
+      }
     }
 
 }

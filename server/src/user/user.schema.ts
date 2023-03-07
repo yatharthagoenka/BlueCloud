@@ -3,8 +3,7 @@ import * as bcrypt from 'bcrypt';
 import { ObjectId } from 'mongodb';
 
 var Gems = new mongoose.Schema({
-    index: Number,
-    createdAt: Date
+    index: Number
 });
 
 export const UserSchema = new mongoose.Schema({

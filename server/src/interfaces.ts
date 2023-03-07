@@ -6,16 +6,23 @@ export interface IUser extends Document {
     username?: string
     email: string
     password: string
-    files?: {
-        _id: ObjectId
-        gems:{
-            documentID: ObjectId
-            index: number
-        }[]
-    }[]
-    createdAt: number
+    files?: [IFile]
+    createdAt: Date
 }
 
 export interface IPayload{
     username:string
+}
+
+export interface IRole{
+    _id: ObjectId
+    name: string
+}
+
+export interface IFile{
+    _id: ObjectId
+    gems:{
+        _id: ObjectId
+        index: number
+    }[]
 }
