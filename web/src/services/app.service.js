@@ -3,7 +3,7 @@ import authHeader from './auth-header';
 
 class AppService {
   getTestContent() {
-    return axios.get(process.env.REACT_APP_API_URL);
+    return axios.get(`${process.env.REACT_APP_API_URL}`);
   }
 
   uploadFile(file, userID, authToken) {

@@ -45,4 +45,15 @@ export class UserService {
     const { username } = payload;
     return await this.userModel.findOne({ username });
   }
+
+  async getUserFiles(id: string){
+    const userID = { _id: new ObjectId(id) };
+    return await this.userModel.findById(userID).select('files');
+  }
+
+  async editUser(id: string, payload: any){
+    const userID = { _id: new ObjectId(id) };
+    const editedUser = await this.userModel.findByIdAndUpdate(userID, payload, { new: true });
+    return editedUser;
+  }
 }

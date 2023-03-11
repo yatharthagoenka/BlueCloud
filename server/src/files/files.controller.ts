@@ -3,12 +3,11 @@ import { AuthGuard } from '@nestjs/passport';
 import { ValidateObjectId } from '../shared/validate-object-id.pipes';
 import { IFile } from 'src/interfaces';
 import { FilesService } from './files.service';
+import { UserService } from '../user/user.service';
 import { UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { WinstonLoggerService } from 'src/winston-logger.service';
-import { v4 as uuidv4 } from 'uuid';
-import * as fs from 'fs';
-import { extname } from 'path';
+
 
 @Controller('files')
 export class FilesController {
@@ -29,34 +28,7 @@ export class FilesController {
     @UseGuards(AuthGuard("jwt"))
     @UseInterceptors(FileInterceptor('file'))
     async uploadFile(@Res() res, @UploadedFile() file: Express.Multer.File, @Query('userID', new ValidateObjectId()) userID) {
-      const filepath = await this.saveFile(file);
+      const filepath = await this.filesService.createFile(userID, file);
       return res.status(HttpStatus.OK).json({res: filepath});
     }
-
-    async saveFile(file): Promise<string> {
-      const { buffer, originalname } = file;
-      const extension = extname(originalname);
-      const fileName = `${uuidv4()}${extension}`;
-      const path = `uploads/${fileName}`;
-  
-          try {
-              const writeStream = fs.createWriteStream(path);
-              writeStream.write(buffer);
-  
-              writeStream.on('error', (error) => {
-                  this.loggerService.error(`Error saving file: ${error}`);
-                  return `Error saving file: ${error}`;
-              });
-  
-              writeStream.on('finish', () => {
-                  this.loggerService.info(`File saved successfully: ${path}`);
-                });
-            return path; 
-          } catch (error) {
-              this.loggerService.error(`Error saving file: ${error}`);
-              return `Error saving file: ${error}`;
-          }
-          
-  }
-  
 }

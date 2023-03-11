@@ -44,11 +44,10 @@ docker images
 
 ## Running docker image for nginx-lb
 
-- This will start an Nginx container acting as a load balancer for the two NestJS app containers. The -p option maps port 80 of the container to port 80 of the host machine, so we can access the load balancer by navigating to http://<ip_address> in your web browser.
+- This will start an Nginx container acting as a load balancer for the two NestJS app containers. The configuration maps port 3000 of the host machine to the ports 3001 and 3002 which are in turn connected to the same ports of each app instances' docker containers, so we can access the load balancer by navigating to http://<ip_address>:<port> in your web browser.
 
 ```
-docker build -t nginx-lb .
-
-docker run -d -p 80:80 --name nginx-lb nginx-lb
+docker compose up
+docker compose up -d        --> To run the container in background
 
 ```
