@@ -27,23 +27,32 @@
     "@nestjs/passport": "^9.0.3",
     "@nestjs/platform-express": "^9.3.9",
     "@types/mongodb": "^4.0.7",
+    "@types/multer-gridfs-storage": "^4.0.5",
+    "@types/winston": "^2.4.4",
     "bcrypt": "^5.1.0",
+    "gridfs-stream": "^1.1.1",
     "jsonwebtoken": "^9.0.0",
-    "mongoose": "^7.0.1",
+    "mongo-gridfs": "^1.1.0",
+    "mongoose": "^6.0.2",
+    "multer": "^1.4.4",
+    "multer-gridfs-storage": "^5.0.2",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^4.3.1",
     "rxjs": "^7.8.0",
-    "ts-httpexceptions": "^4.1.0"
+    "ts-httpexceptions": "^4.1.0",
+    "winston": "^3.8.2"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.2.0",
     "@nestjs/schematics": "^9.0.4",
     "@nestjs/testing": "^9.3.9",
+    "@types/bcrypt": "^5.0.0",
     "@types/express": "^4.17.17",
     "@types/jest": "29.4.0",
     "@types/node": "18.14.6",
+    "@types/passport-jwt": "^3.0.8",
     "@types/supertest": "^2.0.12",
     "@typescript-eslint/eslint-plugin": "^5.54.1",
     "@typescript-eslint/parser": "^5.54.1",
@@ -58,9 +67,7 @@
     "ts-loader": "^9.4.2",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "4.1.2",
-    "typescript": "^4.9.5",
-    "@types/bcrypt": "^5.0.0",
-    "@types/passport-jwt": "^3.0.8"
+    "typescript": "^4.9.5"
   },
   "jest": {
     "moduleFileExtensions": [

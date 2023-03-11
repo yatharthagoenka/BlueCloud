@@ -18,6 +18,8 @@ export enum IRole{
 
 export interface IFile{
     _id: ObjectId
+    name: string
+    url: string
     role: IRole
     gems:{
         _id: ObjectId

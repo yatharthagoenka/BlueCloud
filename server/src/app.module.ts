@@ -6,6 +6,7 @@ import { AuthModule } from './authentication/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import { FilesModule } from './files/files.module';
+import { WinstonLoggerService } from './winston-logger.service';
 
 @Module({
   imports: [
@@ -20,6 +21,6 @@ import { FilesModule } from './files/files.module';
     FilesModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [WinstonLoggerService, AppService],
 })
 export class AppModule {}
