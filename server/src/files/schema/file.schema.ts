@@ -2,9 +2,6 @@ import * as mongoose from 'mongoose';
 import { IRole } from 'src/interfaces';
 
 export const FileSchema = new mongoose.Schema({
-    name:{
-      type: String,
-    },
     url:{
       type: String,
       required: true,
