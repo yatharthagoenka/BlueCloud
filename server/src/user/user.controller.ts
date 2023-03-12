@@ -43,18 +43,4 @@ export class UserController {
             contact: editedUser,
         });
     }
-    
-    // @Delete('/delete')
-    // @UseGuards(AuthGuard("jwt"), RolesGuard)
-    // @Roles(Role.ADMIN)
-    // async deleteContact(@Res() res,  @Query('contactID', new ValidateObjectId()) contactID) {
-    //     const deletedContact = await this.contactService.deleteContact(contactID);
-    //     if (!deletedContact) {
-    //         throw new NotFoundException('Contact does not exist!');
-    //     }
-    //     return res.status(HttpStatus.OK).json({
-    //         message: 'Contact has been deleted!',
-    //         contact: deletedContact,
-    //     });
-    // }
 }
