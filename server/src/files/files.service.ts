@@ -49,7 +49,7 @@ export class FilesService {
 
     async createFile(userID: ObjectId, file: Express.Multer.File) : Promise<string> {
         const user = await this.userService.findById(userID.toString());
-        let filepath = '';
+        let filename = '';
         let resultCreateFile;
         if(!user) {
             this.loggerService.error(`User with ID ${userID} does not exist`)
@@ -57,8 +57,8 @@ export class FilesService {
         }
         // Saving to server
         try{
-            filepath = await this.saveFile(file);
-            this.loggerService.info(`File saved to server successfully: ${filepath}`);
+            filename = await this.saveFile(file);
+            this.loggerService.info(`File saved to server successfully: ${filename}`);
         }catch(error){
             this.loggerService.error(error);
             return error;
@@ -66,9 +66,13 @@ export class FilesService {
         // Saving to db
         try{
             const createFileDTO = {
-                url: filepath,
+                url: filename, 
                 ownerID: userID,
-                gems: []
+                gems: [{
+                    index: 0, 
+                    url: filename, 
+                    enc: "none"
+                }]
             }
             const createdFile = new this.fileModel(createFileDTO);
             resultCreateFile = await createdFile.save();
@@ -78,15 +82,27 @@ export class FilesService {
                 role: [IRole.OWNER, IRole.EDITOR, IRole.VIEWER]
             }
             await this.userService.addFileToUser(userID.toString(), userFileRecord);
-            this.loggerService.info(`File ${filepath} added to db and user profile.`);
+            this.loggerService.info(`File ${filename} added to db and user profile.`);
         }catch(error){
-            this.deleteFile(resultCreateFile._id);
-            this.loggerService.error(`Unable to add file : ${filepath} to db. Deleted from server. `);
+            this.deleteFileFromServer(filename)
+            this.loggerService.error(`Unable to add file : ${filename} to db. Deleted from server. `);
             return error;
         }
-        return filepath;
+        return resultCreateFile;
     }
 
+    async deleteFileFromServer(filename: string): Promise<string> {
+        return new Promise(() => {
+            fs.unlink(`uploads/${filename}`, (error) => {
+              if (error) {
+                this.loggerService.error(`While deleting from server: ${error}`);
+              } else {
+                this.loggerService.info(`File deleted from server: ${filename}`);
+              }
+            });
+        });
+    }
+    
     async deleteFile(fileID: ObjectId): Promise<string> {
         const file = await this.fileModel.findById(fileID.toString());
         if(!file) {
@@ -102,16 +118,6 @@ export class FilesService {
             this.loggerService.error(`Unable to delete file from db: ${error}`);
             return error;
         }
-        return new Promise((resolve, reject) => {
-          fs.unlink(`uploads/${file.url}`, (error) => {
-            if (error) {
-              this.loggerService.error(`While deleting from server: ${error}`);
-              return reject(error);
-            } else {
-              this.loggerService.info(`File deleted from server: ${file.url}`);
-              return resolve(file.url);
-            }
-          });
-        });
+        this.deleteFileFromServer(file.url);
     }
 }
