@@ -1,7 +1,18 @@
 import * as mongoose from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { IRole } from 'src/interfaces';
-import { FileSchema } from 'src/files/schema/file.schema';
+
+export const userFileRecord = new mongoose.Schema({
+    fileID:{
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+    },
+    role: [{
+      type: String,
+      enum: [IRole.VIEWER, IRole.EDITOR, IRole.OWNER],
+      required: true,
+    }]
+});
 
 export const UserSchema = new mongoose.Schema({
     username:{
@@ -18,7 +29,7 @@ export const UserSchema = new mongoose.Schema({
         type:String,
         required:true
     },
-    files:[FileSchema],
+    files:[userFileRecord],
     createdAt: {
         type: Date,
         default: Date.now,

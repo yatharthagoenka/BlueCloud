@@ -6,9 +6,8 @@ export const FileSchema = new mongoose.Schema({
       type: String,
       required: true,
     },
-    role: {
-      type: String,
-      enum: [IRole.VIEWER, IRole.EDITOR, IRole.OWNER],
+    ownerID:{
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
     gems: [
@@ -17,9 +16,13 @@ export const FileSchema = new mongoose.Schema({
           type: Number,
           required: true,
         },
-        name: {
+        url: {
             type: String,
             required: true,
+        },
+        enc: {
+          type: String,
+          required: true,
         }
       },
     ],
