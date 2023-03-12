@@ -56,4 +56,18 @@ export class UserService {
     const editedUser = await this.userModel.findByIdAndUpdate(userID, payload, { new: true });
     return editedUser;
   }
+
+  async addFileToUser(userID: string, file: any){
+    await this.userModel.updateOne(
+      { _id: userID },
+      { $push: { files: file } }
+    );
+  }
+
+  async deleteUsersFile(fileID: ObjectId){
+    await this.userModel.updateMany(
+      { files: { $elemMatch: { fileID: fileID } } },
+      { $pull: { files: { fileID: fileID } } }
+    );
+  }
 }

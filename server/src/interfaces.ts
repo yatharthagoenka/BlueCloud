@@ -6,7 +6,7 @@ export interface IUser extends Document {
     username?: string
     email: string
     password: string
-    files?: [IFile]
+    files?: IFile[]
     createdAt: Date
 }
 
@@ -16,17 +16,27 @@ export enum IRole{
     OWNER = 'owner',
 }
 
-export interface IFile{
+export interface IUserFileRecord{
+    fileID: ObjectId
+    role: IRole[]
+}
+
+export interface IFile{ 
     _id: ObjectId
     url: string
-    role: [IRole]
+    ownerID: ObjectId
     gems?:{
         _id: ObjectId
         index: number
+        enc: string
         name: string
     }[]
 }
 
 export interface IPayload{
     username:string
+}
+
+export interface FileDTO{
+    url: string
 }
