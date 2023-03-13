@@ -3,6 +3,10 @@ import * as bcrypt from 'bcrypt';
 import { IRole } from 'src/interfaces';
 
 export const userFileRecord = new mongoose.Schema({
+    originalname:{
+        type:String,
+        required:true,
+    },
     fileID:{
       type: mongoose.Schema.Types.ObjectId,
       required: true,
