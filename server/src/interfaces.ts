@@ -6,7 +6,7 @@ export interface IUser extends Document {
     username?: string
     email: string
     password: string
-    files?: IFile[]
+    files?: IUserFileRecord[]
     createdAt: Date
 }
 
@@ -17,6 +17,7 @@ export enum IRole{
 }
 
 export interface IUserFileRecord{
+    originalname: string
     fileID: ObjectId
     role: IRole[]
 }
