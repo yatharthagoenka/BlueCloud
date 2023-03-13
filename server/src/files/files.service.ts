@@ -17,11 +17,11 @@ export class FilesService {
         private userService: UserService
     ){}
 
-    async saveFile(file): Promise<string> {
+    async saveFile(file): Promise<any> {
         const { buffer, originalname } = file;
         const extension = extname(originalname);
-        const originalName = originalname.slice(0, 6);
-        const fileName = `${originalName}-${uuidv4()}${extension}`;
+        const originalnamePrefix = originalname.slice(0, 6);
+        const fileName = `${originalnamePrefix}-${uuidv4()}${extension}`;
         const path = `uploads/${fileName}`;
         try {
             const writeStream = fs.createWriteStream(path);
@@ -35,7 +35,7 @@ export class FilesService {
             writeStream.on('finish', () => {
                 this.loggerService.info(`File saved successfully: ${path}`);
                 });
-            return fileName; 
+            return {originalname, fileName}; 
         } catch (error) {
             this.loggerService.error(`Error saving file: ${error}`);
             return `Error saving file: ${error}`;
@@ -49,7 +49,7 @@ export class FilesService {
 
     async createFile(userID: ObjectId, file: Express.Multer.File) : Promise<string> {
         const user = await this.userService.findById(userID.toString());
-        let filename = '';
+        let savedFile;
         let resultCreateFile;
         if(!user) {
             this.loggerService.error(`User with ID ${userID} does not exist`)
@@ -57,8 +57,8 @@ export class FilesService {
         }
         // Saving to server
         try{
-            filename = await this.saveFile(file);
-            this.loggerService.info(`File saved to server successfully: ${filename}`);
+            savedFile = await this.saveFile(file);
+            this.loggerService.info(`File saved to server successfully: ${savedFile.fileName}`);
         }catch(error){
             this.loggerService.error(error);
             return error;
@@ -66,26 +66,30 @@ export class FilesService {
         // Saving to db
         try{
             const createFileDTO = {
-                url: filename, 
+                url: savedFile.fileName, 
                 ownerID: userID,
                 gems: [{
                     index: 0, 
-                    url: filename, 
+                    url: savedFile.fileName, 
                     enc: "none"
                 }]
             }
+            // save to filesModel
             const createdFile = new this.fileModel(createFileDTO);
             resultCreateFile = await createdFile.save();
             this.loggerService.debug(`FileID:  ${resultCreateFile._id}`);
+            
+            // save to usersModel
             const userFileRecord : IUserFileRecord = {
+                originalname: savedFile.originalname,
                 fileID: resultCreateFile._id,
                 role: [IRole.OWNER, IRole.EDITOR, IRole.VIEWER]
             }
             await this.userService.addFileToUser(userID.toString(), userFileRecord);
-            this.loggerService.info(`File ${filename} added to db and user profile.`);
+            this.loggerService.info(`File ${savedFile.fileName} added to db and user profile.`);
         }catch(error){
-            this.deleteFileFromServer(filename)
-            this.loggerService.error(`Unable to add file : ${filename} to db. Deleted from server. `);
+            this.deleteFileFromServer(savedFile.fileName)
+            this.loggerService.error(`Unable to add file : ${savedFile.fileName} to db. Deleted from server. `);
             return error;
         }
         return resultCreateFile;

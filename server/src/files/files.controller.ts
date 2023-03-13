@@ -1,11 +1,12 @@
 import { Controller, Get, Post, Put, Delete, UseGuards, Res, HttpStatus, Query, UploadedFiles, Param, Body } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ValidateObjectId } from '../shared/validate-object-id.pipes';
-import { FileDTO } from 'src/interfaces';
+import { FileDTO, IRole } from 'src/interfaces';
 import { FilesService } from './files.service';
 import { UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { WinstonLoggerService } from 'src/winston-logger.service';
+// import { CheckUserRole } from './role.decorator';
 
 
 @Controller('files')
@@ -26,7 +27,12 @@ export class FilesController {
 
     @Delete('/:filename')
     @UseGuards(AuthGuard("jwt"))
-    async deleteFile(@Query('fileID', new ValidateObjectId()) fileID, @Body() file: FileDTO, @Res() res) {
+    async deleteFile(
+      @Query('userID', new ValidateObjectId()) userID, 
+      @Query('fileID', new ValidateObjectId()) fileID, 
+      @Res() res,
+      // @CheckUserRole({ userIDKey: 'userID', fileIDKey: 'fileID', requiredRole: IRole.OWNER }) userFile: { userID: string; fileID: string },
+      ) {
       try {
         await this.filesService.deleteFile(fileID);
         return res.status(HttpStatus.OK).json({ message: 'File deleted successfully' });
