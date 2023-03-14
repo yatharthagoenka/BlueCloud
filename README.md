@@ -51,3 +51,25 @@ docker compose up
 docker compose up -d        --> To run the container in background
 
 ```
+- To change the protocol for load-balancing between the server instances, add one of the methods in the `upstream` block of [nginx.conf](load-balancer/nginx.conf) file.
+
+```
+...
+
+http {
+  upstream app_servers {
+    least_conn              ----> Setting protocol
+    server app_1:3001;
+    server app_2:3002;
+  }
+
+  ...
+}
+
+```
+
+- Options:
+    - round_robin (Default)
+    - least_conn
+    - ip_hash
+    - least_time
