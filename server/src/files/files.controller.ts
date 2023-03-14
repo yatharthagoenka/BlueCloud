@@ -17,6 +17,13 @@ export class FilesController {
       private readonly loggerService: WinstonLoggerService
     ){}
 
+    @Get('/user')
+    @UseGuards(AuthGuard("jwt"))
+    async getUserFiles(@Res() res, @Query('userID', new ValidateObjectId()) userID) {
+        const files = await this.filesService.getUserFiles(userID);
+        return res.status(HttpStatus.OK).json(files);
+    }
+
     @Post('/upload')
     @UseGuards(AuthGuard("jwt"))
     @UseInterceptors(FileInterceptor('file'))

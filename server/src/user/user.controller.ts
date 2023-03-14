@@ -23,13 +23,6 @@ export class UserController {
         return res.status(HttpStatus.OK).json(user);
     }
 
-    @Get('/files')
-    @UseGuards(AuthGuard("jwt"))
-    async getUserFiles(@Res() res, @Query('userID', new ValidateObjectId()) userID) {
-        const files = await this.userService.getUserFiles(userID);
-        return res.status(HttpStatus.OK).json(files);
-    }
-
     @Put('/edit')
     @UseGuards(AuthGuard("jwt"))
     async editUser(@Res() res, @Query('userID', new ValidateObjectId()) userID, @Body() editUserDTO){

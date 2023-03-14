@@ -42,9 +42,8 @@ export class FilesService {
         } 
     }
     
-    async getUserFiles(userId: ObjectId): Promise<IFile[]> {
-        const Files = await this.fileModel.find({ownerID: userId}).exec();
-        return Files;
+    async getUserFiles(userId: ObjectId): Promise<any> {
+        return await this.userService.getUserFiles(userId.toString());
     }
 
     async createFile(userID: ObjectId, file: Express.Multer.File) : Promise<string> {
