@@ -10,11 +10,13 @@ class Dashboard extends Component {
   constructor(props) {
     super(props);
     this.handleFileInput = this.handleFileInput.bind(this);
+    this.uploadFile = this.uploadFile.bind(this);
 
     this.state = {
       redirect: null,
       userReady: false,
       message: '',
+      loading: false,
       selectedFile: null,
       currentUser: ''
     };
@@ -29,27 +31,30 @@ class Dashboard extends Component {
   uploadFile(e){
     e.preventDefault();
 
+    this.setState({
+      message: "",
+      loading: true
+    });
+
     const data = new FormData()
     data.append('file', this.state.selectedFile)
 
     AppService.uploadFile(data, this.state.currentUser.user._id, JSON.parse(localStorage.getItem("user")).token).then(
       response => {
         this.setState({
-          content: response.data
+          message: response.data,
+          loading: false,
         });
       },
       error => {
         this.setState({
-          content:
-            (error.response && error.response.data) ||
-            error.message ||
-            error.toString()
+          message: error.toString()
         });
       }
     );
   }
-  
-  componentDidMount() {
+
+  componentDidMount(){
     const currentUser = AuthService.getCurrentUser();
 
     if (!currentUser) this.setState({ redirect: "/home" });
@@ -76,27 +81,25 @@ class Dashboard extends Component {
               <Input
                 type="file"
                 className="form-control"
-                name="file"
+                name="file" 
                 onChange={this.handleFileInput}
               />
             </div>
 
             <div className="form-group">
-              <button className="btn btn-primary btn-block">
+              <button
+                className="btn btn-primary btn-block"
+                disabled={this.state.loading}
+              >
+                {this.state.loading && (
+                  <span className="spinner-border spinner-border-sm"></span>
+                )}
                 <span>Upload</span>
               </button>
             </div>
-
-            {this.state.message && (
-              <div className="form-group">
-                <div className="alert alert-danger" role="alert">
-                  {this.state.message}
-                </div>
-              </div>
-            )}
           </Form>
         {(this.state.userReady) ?
-        <p style={{ position: 'fixed', bottom: 0, left: '1em' }}>User: {currentUser.user._id}</p>
+        <p style={{ position: 'fixed', bottom: 0, left: '1em' }}>User: {currentUser.user.username}</p>
         : null}
       </div>
     );
