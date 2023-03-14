@@ -4,6 +4,9 @@ import AuthService from "../services/auth.service";
 import AppService from "../services/app.service";
 import Form from "react-validation/build/form";
 import Input from "react-validation/build/input";
+import Table from 'react-bootstrap/Table';
+import Button from 'react-bootstrap/Button';
+import ReactPaginate from "react-paginate";
 import { withRouter } from "../common/with-router";
 
 class Dashboard extends Component {
@@ -15,10 +18,15 @@ class Dashboard extends Component {
     this.state = {
       redirect: null,
       userReady: false,
+      files: [],
       message: '',
       loading: false,
       selectedFile: null,
-      currentUser: ''
+      currentUser: '',
+      itemsPerPage: 3,
+      pageCount: 0,
+      itemOffset: 0,
+      currentItems: [],
     };
   }
 
@@ -59,6 +67,23 @@ class Dashboard extends Component {
 
     if (!currentUser) this.setState({ redirect: "/home" });
     this.setState({ currentUser: currentUser, userReady: true })
+
+    const endOffset = this.state.itemOffset + this.state.itemsPerPage;
+
+    AppService.getUserFiles(currentUser.user._id, JSON.parse(localStorage.getItem("user")).token).then(
+      response => {
+        this.setState({
+          files: response.data.files,
+          currentItems: response.data.files.slice(this.state.itemOffset, endOffset),
+          pageCount: Math.ceil(response.data.length / this.state.itemsPerPage)
+        });
+      },
+      error => {
+        this.setState({
+          message: error.toString()
+        });
+      }
+    );
   }
 
   render() {
@@ -101,6 +126,45 @@ class Dashboard extends Component {
         {(this.state.userReady) ?
         <p style={{ position: 'fixed', bottom: 0, left: '1em' }}>User: {currentUser.user.username}</p>
         : null}
+        <br/><br/>
+        <Table striped bordered hover size="sm">
+          <thead>
+            <tr>
+              <th>Filename</th>
+              <th>Role</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+          {this.state.currentItems && this.state.currentItems.map((item) => (
+            <tr>
+              <td>{item.originalname}</td>
+              <td>{item.role[0]}</td>
+              <td className="d-flex justify-content-around"><Button variant="danger" onClick={()=>this.deleteFile(item._id)}>Delete</Button></td>
+            </tr>
+          ))}
+          </tbody>
+        </Table>
+        <ReactPaginate
+          nextLabel="next >"
+          onPageChange={this.handlePageClick}
+          pageRangeDisplayed={3}
+          marginPagesDisplayed={2}
+          pageCount={this.state.pageCount}
+          previousLabel="< previous"
+          pageClassName="page-item"
+          pageLinkClassName="page-link"
+          previousClassName="page-item"
+          previousLinkClassName="page-link"
+          nextClassName="page-item"
+          nextLinkClassName="page-link"
+          breakLabel="..."
+          breakClassName="page-item"
+          breakLinkClassName="page-link"
+          containerClassName="pagination"
+          activeClassName="active"
+          renderOnZeroPageCount={null}
+        />
       </div>
     );
   }

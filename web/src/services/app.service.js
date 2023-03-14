@@ -18,6 +18,18 @@ class AppService {
     });
 
   }
+
+  getUserFiles(userID, authToken) {
+    return axios.get(process.env.REACT_APP_API_URL + 'files/user', {
+      headers: {
+        Authorization: `Bearer ${authToken}`
+      },
+      params:{
+        userID: userID
+      }
+    });
+
+  }
 }
 
 export default new AppService();
