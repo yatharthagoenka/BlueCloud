@@ -25,6 +25,11 @@ docker-compose up -d
 ```
 > Note: `-d flag` is used to run the container in background
 
+> If the NestJS applications fail to connect with the mongodb service inside the containers, try disabling your system firewall using:
+```
+sudo ufw disable
+```
+
 <br>
 
 - To stop the containers, use the following command: 
