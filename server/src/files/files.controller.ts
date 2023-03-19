@@ -32,16 +32,26 @@ export class FilesController {
       return res.status(HttpStatus.OK).json({res: filepath});
     }
 
+    @Get('/download')
+    @UseGuards(AuthGuard("jwt"))
+    async downloadFile(@Res() res, @Query('fileID', new ValidateObjectId()) fileID) {
+      try {
+        const file = await this.filesService.downloadFile(fileID);
+        return res.download(file);
+      } catch (error) {
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error downloading file' });
+      }
+    }
+
     @Delete('')
     @UseGuards(AuthGuard("jwt"))
     async deleteFile(
-      @Query('userID', new ValidateObjectId()) userID, 
       @Query('fileID', new ValidateObjectId()) fileID, 
       @Res() res,
       // @CheckUserRole({ userIDKey: 'userID', fileIDKey: 'fileID', requiredRole: IRole.OWNER }) userFile: { userID: string; fileID: string },
       ) {
       try {
-        await this.filesService.deleteFile(fileID);
+        await this.filesService.deleteFolder(fileID, 'all');
         return res.status(HttpStatus.OK).json({ message: 'File deleted successfully' });
       } catch (error) {
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error deleting file' });

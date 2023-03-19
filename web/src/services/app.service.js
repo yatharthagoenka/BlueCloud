@@ -15,7 +15,6 @@ class AppService {
         userID: userID
       }
     });
-    
   }
   
   uploadFile(file, userID, authToken) {
@@ -28,7 +27,17 @@ class AppService {
         userID: userID
       }
     });
-
+  }
+  
+  downloadFile(fileID, authToken) {
+    return axios.get(process.env.REACT_APP_API_URL + 'files/download', {
+      headers: {
+        Authorization: `Bearer ${authToken}`
+      },
+      params:{
+        fileID: fileID
+      }
+    });
   }
 
   deleteFile(userID, fileID, authToken) {
