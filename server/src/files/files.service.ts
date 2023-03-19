@@ -60,8 +60,30 @@ export class FilesService {
             return stderr;
         }
         const gems = JSON.parse(stdout.toString());
-        // this.loggerService.info(`divider.py: ${gems}`);
         return gems;
+    }
+
+    async combineFiles(fileName, originalname) : Promise<string> {
+        const folderPath = path.join(__dirname, '..', '..', 'uploads', fileName);
+        const fileGems = await fs.promises.readdir(folderPath);
+        this.loggerService.debug(fileGems.toString())
+        const outputFilePath = path.join(folderPath, `${originalname}`);
+        
+        fileGems.sort((a, b) => Number(a.split('-').shift()) - Number(b.split('-').shift()));
+        
+        const outputStream = fs.createWriteStream(outputFilePath);
+        
+        for (const gem of fileGems) {
+            const gemPath = path.join(folderPath, gem);
+            const readStream = fs.createReadStream(gemPath);
+            await new Promise((resolve, reject) => {
+                readStream.pipe(outputStream, { end: false });
+                readStream.on('error', reject);
+                readStream.on('end', resolve);
+            });
+        }
+        outputStream.end();
+        return outputFilePath;
     }
 
     async getUserFiles(userId: ObjectId): Promise<any> {
@@ -97,7 +119,7 @@ export class FilesService {
             });
             // creating gems and deleting temp image
             gems = await this.divideFile(savedFile);
-            this.deleteTempFileFromServer(savedFile.fileName)
+            this.deleteFile(`uploads/${savedFile.fileName}`)
 
             this.loggerService.info(`createFile: File ${savedFile.fileName} saved to server`);
         }catch(error){
@@ -108,11 +130,12 @@ export class FilesService {
         // Saving to db
         try{
             const createFileDTO = {
+                originalname: savedFile.originalname,
                 url: `${savedFile.fileName}${savedFile.extension}`, 
                 ownerID: userID,
                 gems: [{
                     index: 0, 
-                    url: savedFile.fileName, 
+                    url: savedFile.fileName, //to be changed
                     enc: "none"
                 }]
             }
@@ -128,7 +151,7 @@ export class FilesService {
             await this.userService.addFileToUser(userID.toString(), userFileRecord);
             this.loggerService.info(`File ${savedFile.fileName} added to db and user profile.`);
         }catch(error){
-            this.deleteTempFileFromServer(savedFile.fileName)
+            this.deleteFile(`uploads/${savedFile.fileName}`)
             await deleteFolderUtil(`uploads/${savedFile.fileName}${savedFile.extension}`, { recursive: true });
             this.loggerService.error(`Unable to add file : ${savedFile.fileName} to db. Deleted from server. `);
             return error;
@@ -136,40 +159,57 @@ export class FilesService {
         return resultCreateFile;
     }
 
-    async deleteTempFileFromServer(filename: string): Promise<string> {
-        return new Promise(() => {
-            fs.unlink(`uploads/${filename}`, (error) => {
-              if (error) {
-                this.loggerService.error(`While deleting from server: ${error}`);
-              } else {
-                this.loggerService.info(`File deleted from server: ${filename}`);
-              }
-            });
-        });
-    }
-    
-    async deleteFile(fileID: ObjectId): Promise<string> {
+    async downloadFile(fileID: ObjectId): Promise<string> {
         const file = await this.fileModel.findById(fileID.toString());
         if(!file) {
             this.loggerService.error(`File with ID ${fileID} does not exist`)
             throw new HttpException('File does not exists', HttpStatus.BAD_REQUEST);
         }
-        // Deleting from server
-        try {
-            await deleteFolderUtil(`uploads/${file.url}`, { recursive: true });
-            this.loggerService.info(`File ${file.url} deleted from server`);
-        }catch (error) {
-            this.loggerService.error(`Failed to delete ${file.url}: ${error}`);
-            return error;
+        if(fs.existsSync(path.join(__dirname, '..', '..', 'uploads', file.url, file.originalname))) {
+            this.loggerService.info('Original file already exists, returning from cache.');
+            return path.join(__dirname, '..', '..', 'uploads', file.url, file.originalname);
         }
-        // Deleting from db
-        try{
-            await this.userService.deleteUsersFile(fileID);
-            await this.fileModel.findByIdAndDelete(fileID);
-            this.loggerService.info(`File deleted from db: ${fileID}`);
-        }catch(error){
-            this.loggerService.error(`Unable to delete file from db: ${error}`);
-            return error;
+        return this.combineFiles(file.url, file.originalname);
+    }
+
+    async deleteFile(url: string): Promise<string> {
+        return new Promise(() => {
+            fs.unlink(url, (error) => {
+              if (error) {
+                this.loggerService.error(`While deleting from server: ${error}`);
+              } else {
+                this.loggerService.info(`File deleted from server: ${url}`);
+              }
+            });
+        });
+    }
+    
+    async deleteFolder(fileID: ObjectId, location: string): Promise<string> {
+        const file = await this.fileModel.findById(fileID.toString());
+        if(!file) {
+            this.loggerService.error(`File with ID ${fileID} does not exist`)
+            throw new HttpException('File does not exists', HttpStatus.BAD_REQUEST);
+        }
+        if(location === 'server' || location === 'all'){
+            // Deleting from server
+            try {
+                await deleteFolderUtil(`uploads/${file.url}`, { recursive: true });
+                this.loggerService.info(`File ${file.url} deleted from server`);
+            }catch (error) {
+                this.loggerService.error(`Failed to delete ${file.url}: ${error}`);
+                return error;
+            }
+        }
+        if(location === 'db' || location === 'all'){
+            // Deleting from db
+            try{
+                await this.userService.deleteUsersFile(fileID);
+                await this.fileModel.findByIdAndDelete(fileID);
+                this.loggerService.info(`File deleted from db: ${fileID}`);
+            }catch(error){
+                this.loggerService.error(`Unable to delete file from db: ${error}`);
+                return error;
+            }
         }
         return file.url;
     }

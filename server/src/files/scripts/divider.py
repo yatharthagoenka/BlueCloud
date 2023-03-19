@@ -7,11 +7,6 @@ if len(sys.argv) < 3:
     print('Usage: python divider.py <fileName> <extension>')
     sys.exit(1)
 
-    # const storePath = path.join(__dirname, '..', '..', 'uploads/',`${savedFile.fileName}${savedFile.extension}`);
-    # const fileSize = fs.statSync(path.join(__dirname, '..', '..', 'uploads/',`${savedFile.fileName}`)).size;
-    # const gemSize = 1024*1024;
-    # const numChunks = Math.ceil(fileSize / gemSize);
-
 file_name = sys.argv[1]
 extension = sys.argv[2]
 file_size = os.path.getsize(os.path.join('uploads', os.path.basename(file_name)))
@@ -31,10 +26,10 @@ with open(file_path, "rb") as infile:
             if not gem:
                 break
             gem_count += 1
-            output_file = os.path.join(output_dir, f"gem{gem_count}")
+            output_file = os.path.join(output_dir, f"{gem_count}-gem")
             with open(output_file, "wb") as outfile:
                 outfile.write(gem)
-            gems.append(f"gem{gem_count}")
+            gems.append(f"{gem_count}-gem")
 
 gems_json = json.dumps(gems)
 print(gems_json)

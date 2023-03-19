@@ -62,11 +62,23 @@ class Dashboard extends Component {
     );
   }
 
+  downloadFile = (fileID) => {
+    AppService.downloadFile(fileID, JSON.parse(localStorage.getItem("user")).token).then(
+      response => {
+        this.setState({
+          message: response.data,
+          loading: false,
+        });
+      },
+      error => {
+        this.setState({
+          message: error.toString()
+        });
+      }
+    );
+  }
+
   deleteFile = (fileID) => {
-    this.setState({
-      message: "",
-      loading: true
-    });
     AppService.deleteFile(this.state.currentUser.user._id, fileID, JSON.parse(localStorage.getItem("user")).token).then(
       response => {
         const updatedFiles = this.state.files.filter(file => file._id !== fileID);

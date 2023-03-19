@@ -1,5 +1,5 @@
 # BlueCloud
-A crrptographic cloud-based file storage system.
+A cryptographic cloud-based file storage system.
 
 
 ## Setting up docker for `server`:
@@ -78,3 +78,11 @@ http {
     - least_conn
     - ip_hash
     - least_time
+
+## Restarting mongod in case of crash
+
+```
+sudo chown -R mongodb:mongodb /var/lib/mongodb 
+sudo chown mongodb:mongodb /tmp/mongodb-27017.sock
+service mongod start
+```

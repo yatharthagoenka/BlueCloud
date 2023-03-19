@@ -2,6 +2,10 @@ import * as mongoose from 'mongoose';
 import { IRole } from 'src/interfaces';
 
 export const FileSchema = new mongoose.Schema({
+    originalname:{
+      type: String,
+      required: true,
+    },
     url:{
       type: String,
       required: true,
