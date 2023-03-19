@@ -60,7 +60,7 @@ export class FilesService {
             return stderr;
         }
         const gems = JSON.parse(stdout.toString());
-        this.loggerService.info(`divider.py: ${gems}`);
+        // this.loggerService.info(`divider.py: ${gems}`);
         return gems;
     }
 
@@ -119,8 +119,6 @@ export class FilesService {
             // save to filesModel
             const createdFile = new this.fileModel(createFileDTO);
             resultCreateFile = await createdFile.save();
-            this.loggerService.debug(`FileID:  ${resultCreateFile._id}`);
-            
             // save to usersModel
             const userFileRecord : IUserFileRecord = {
                 originalname: savedFile.originalname,

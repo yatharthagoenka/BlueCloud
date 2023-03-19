@@ -62,6 +62,36 @@ class Dashboard extends Component {
     );
   }
 
+  deleteFile = (fileID) => {
+    this.setState({
+      message: "",
+      loading: true
+    });
+    AppService.deleteFile(this.state.currentUser.user._id, fileID, JSON.parse(localStorage.getItem("user")).token).then(
+      response => {
+        const updatedFiles = this.state.files.filter(file => file._id !== fileID);
+        this.setState({
+          message: response.data,
+          loading: false,
+          files: updatedFiles,
+          currentItems: updatedFiles.slice(this.state.itemOffset, this.state.itemOffset + this.state.itemsPerPage),
+          pageCount: Math.ceil(updatedFiles.length / this.state.itemsPerPage)
+        });
+      },
+      error => {
+        this.setState({
+          message: error.toString()
+        });
+      }
+    );
+  }
+  
+  handlePageClick = (event) => {
+    const newOffset = event.selected * this.state.itemsPerPage % this.state.files.length;
+    this.setState({itemOffset: newOffset});
+    this.setState({currentItems: this.state.files.slice(newOffset, newOffset + this.state.itemsPerPage)});
+  };
+
   componentDidMount(){
     const currentUser = AuthService.getCurrentUser();
 
@@ -140,7 +170,7 @@ class Dashboard extends Component {
             <tr>
               <td>{item.originalname}</td>
               <td>{item.role[0]}</td>
-              <td className="d-flex justify-content-around"><Button variant="danger" onClick={()=>this.deleteFile(item._id)}>Delete</Button></td>
+              <td className="d-flex justify-content-center"><Button variant="success" className="mr-4" onClick={()=>this.downloadFile(item.fileID)}>Download</Button><Button variant="danger" onClick={()=>this.deleteFile(item.fileID)}>Delete</Button></td>
             </tr>
           ))}
           </tbody>
