@@ -32,7 +32,7 @@ export class FilesController {
       return res.status(HttpStatus.OK).json({res: filepath});
     }
 
-    @Delete('/:filename')
+    @Delete('')
     @UseGuards(AuthGuard("jwt"))
     async deleteFile(
       @Query('userID', new ValidateObjectId()) userID, 

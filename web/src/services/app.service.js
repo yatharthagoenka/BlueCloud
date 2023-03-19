@@ -5,7 +5,19 @@ class AppService {
   getTestContent() {
     return axios.get(`${process.env.REACT_APP_API_URL}`);
   }
-
+  
+  getUserFiles(userID, authToken) {
+    return axios.get(process.env.REACT_APP_API_URL + 'files/user', {
+      headers: {
+        Authorization: `Bearer ${authToken}`
+      },
+      params:{
+        userID: userID
+      }
+    });
+    
+  }
+  
   uploadFile(file, userID, authToken) {
     return axios.post(process.env.REACT_APP_API_URL + 'files/upload', file, {
       headers: {
@@ -19,16 +31,16 @@ class AppService {
 
   }
 
-  getUserFiles(userID, authToken) {
-    return axios.get(process.env.REACT_APP_API_URL + 'files/user', {
+  deleteFile(userID, fileID, authToken) {
+    return axios.delete(process.env.REACT_APP_API_URL + 'files', {
       headers: {
         Authorization: `Bearer ${authToken}`
       },
       params:{
-        userID: userID
+        userID: userID,
+        fileID: fileID
       }
     });
-
   }
 }
 
