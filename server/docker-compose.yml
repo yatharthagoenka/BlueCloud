@@ -40,5 +40,18 @@ services:
       - db
     networks:
       - bcloud-net
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    ports:
+      - "3000:3000"
+    networks:
+      - bcloud-net
+    depends_on:
+      - app1
+      - app2
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
 volumes:
   mongo-data:

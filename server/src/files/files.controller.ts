@@ -8,7 +8,6 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { WinstonLoggerService } from 'src/winston-logger.service';
 // import { CheckUserRole } from './role.decorator';
 
-
 @Controller('files')
 export class FilesController {
 
@@ -37,6 +36,7 @@ export class FilesController {
     async downloadFile(@Res() res, @Query('fileID', new ValidateObjectId()) fileID) {
       try {
         const file = await this.filesService.downloadFile(fileID);
+        this.loggerService.debug(file)
         return res.download(file);
       } catch (error) {
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error downloading file' });
