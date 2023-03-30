@@ -66,7 +66,6 @@ export class FilesService {
     async combineFiles(fileName, originalname) : Promise<string> {
         const folderPath = path.join(__dirname, '..', '..', 'uploads', fileName);
         const fileGems = await fs.promises.readdir(folderPath);
-        this.loggerService.debug(fileGems.toString())
         const outputFilePath = path.join(folderPath, `${originalname}`);
         
         fileGems.sort((a, b) => Number(a.split('-').shift()) - Number(b.split('-').shift()));
