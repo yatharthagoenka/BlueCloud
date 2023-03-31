@@ -4,7 +4,6 @@ import { ObjectId } from 'mongodb';
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
 import { LoginDTO, RegisterDTO } from '../authentication/dto/auth.dto';
-import * as mongoose from 'mongoose';
 import { IPayload, IUser } from 'src/interfaces';
 
 @Injectable()
@@ -25,7 +24,7 @@ export class UserService {
     const { username, password } = UserDTO;
     const user : IUser = await this.userModel
       .findOne({ username })
-      .select('username email password files');
+      .select('username email password');
     if(!user) {
       throw new HttpException('User does not exists', HttpStatus.BAD_REQUEST);
     }

@@ -1,7 +1,5 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import express, { Router } from 'express'
-import fs from 'fs-extra'
 const dotenv = require("dotenv")
 
 dotenv.config();
