@@ -1,5 +1,4 @@
 import { Controller, Get, Res, HttpStatus, Param, NotFoundException, Post, Body, Put, Query, Delete, UseGuards } from '@nestjs/common';
-import { AuthService } from '../authentication/auth.service';
 import { AuthGuard } from '@nestjs/passport/dist/auth.guard';
 import { ValidateObjectId } from '../shared/validate-object-id.pipes';
 import { UserService } from 'src/user/user.service';

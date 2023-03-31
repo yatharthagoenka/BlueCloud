@@ -11,7 +11,7 @@ export class AppController {
 
   @Get()
   getHello(): string {
-    console.log("debug: Successfully called getHello!")
+    this.loggerService.debug("debug: Successfully called getHello!")
     return this.appService.getHello();
   }
 }

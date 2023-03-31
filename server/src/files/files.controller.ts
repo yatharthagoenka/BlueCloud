@@ -6,11 +6,9 @@ import { FilesService } from './files.service';
 import { UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { WinstonLoggerService } from 'src/winston-logger.service';
-// import { CheckUserRole } from './role.decorator';
 
 @Controller('files')
 export class FilesController {
-
     constructor(
       private filesService: FilesService,
       private readonly loggerService: WinstonLoggerService
