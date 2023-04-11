@@ -8,13 +8,14 @@ export const userFileRecord = new mongoose.Schema({
         required:true,
     },
     fileID:{
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Files',
+        required: true,
     },
     role: [{
-      type: String,
-      enum: [IRole.VIEWER, IRole.EDITOR, IRole.OWNER],
-      required: true,
+        type: String,
+        enum: [IRole.VIEWER, IRole.EDITOR, IRole.OWNER],
+        required: true,
     }]
 });
 

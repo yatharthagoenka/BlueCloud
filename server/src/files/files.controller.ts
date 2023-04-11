@@ -1,7 +1,6 @@
-import { Controller, Get, Post, Put, Delete, UseGuards, Res, HttpStatus, Query, UploadedFiles, Param, Body } from '@nestjs/common';
+import { Controller, Get, Post, Delete, UseGuards, Res, HttpStatus, Query, UploadedFiles, Param, Body } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ValidateObjectId } from '../shared/validate-object-id.pipes';
-import { FileDTO, IRole } from 'src/interfaces';
 import { FilesService } from './files.service';
 import { UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -46,10 +45,9 @@ export class FilesController {
     async deleteFile(
       @Query('fileID', new ValidateObjectId()) fileID, 
       @Res() res,
-      // @CheckUserRole({ userIDKey: 'userID', fileIDKey: 'fileID', requiredRole: IRole.OWNER }) userFile: { userID: string; fileID: string },
       ) {
       try {
-        await this.filesService.deleteFolder(fileID, 'all');
+        await this.filesService.delete(fileID, 'all');
         return res.status(HttpStatus.OK).json({ message: 'File deleted successfully' });
       } catch (error) {
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error deleting file' });

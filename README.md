@@ -25,6 +25,8 @@ docker-compose up -d
 ```
 > Note: `-d flag` is used to run the container in background
 
+- This will start two app container instances, one db instance and an Nginx container acting as a load balancer for the two NestJS app containers. The configuration maps port 3000 of the host machine to the ports 3001 and 3002 which are in turn connected to the same ports of each app instances' docker containers, so we can access the load balancer by navigating to http://<ip_address>:<port> in your web browser.
+
 > If the NestJS applications fail to connect with the mongodb service inside the containers, try disabling your system firewall using:
 ```
 sudo ufw disable
@@ -47,15 +49,8 @@ docker ps -a
 docker images
 ```
 
-## Running docker image for nginx-lb
+## Configuring nginx 
 
-- This will start an Nginx container acting as a load balancer for the two NestJS app containers. The configuration maps port 3000 of the host machine to the ports 3001 and 3002 which are in turn connected to the same ports of each app instances' docker containers, so we can access the load balancer by navigating to http://<ip_address>:<port> in your web browser.
-
-```
-docker compose up
-docker compose up -d        --> To run the container in background
-
-```
 - To change the protocol for load-balancing between the server instances, add one of the methods in the `upstream` block of [nginx.conf](load-balancer/nginx.conf) file.
 
 ```
