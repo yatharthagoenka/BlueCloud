@@ -3,18 +3,17 @@ import os
 import math
 import json
 
-if len(sys.argv) < 3:
-    print('Usage: python divider.py <fileName> <extension>')
+if len(sys.argv) < 2:
+    print('Usage: python divider.py <fileName>')
     sys.exit(1)
 
 file_name = sys.argv[1]
-extension = sys.argv[2]
 file_size = os.path.getsize(os.path.join('uploads', os.path.basename(file_name)))
 file_path = os.path.join('uploads', file_name)
 
 gem_size = 1024 * 1024
 num_gems = math.ceil(file_size / gem_size)
-output_dir = os.path.join('uploads', os.path.basename(file_name + extension))
+output_dir = os.path.join('uploads', os.path.basename(file_name+".dir"))
 
 os.makedirs(output_dir, exist_ok=True)
 
