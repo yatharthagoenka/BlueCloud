@@ -15,7 +15,7 @@ import { promisify } from 'util';
 
 const exec = util.promisify(child_process.exec);
 const execPromise = promisify(exec);
-const deleteFolderUtil = promisify(fs.rm);
+const deleteGemsUtil = promisify(fs.rm);
 
 @Injectable()
 export class FilesService {
@@ -28,8 +28,8 @@ export class FilesService {
     async saveFile(file): Promise<any> {
         const { buffer, originalname } = file;
         const extension = extname(originalname);
-        const fileName = `${uuidv4()}`;
-        const tempImagePath = `uploads/${fileName}`;
+        const uuid = `${uuidv4()}`;
+        const tempImagePath = `uploads/files/${uuid}`;
         try {
             const writeStream = fs.createWriteStream(tempImagePath);
             writeStream.write(buffer);
@@ -43,7 +43,7 @@ export class FilesService {
                 this.loggerService.info(`Temporary image saved successfully: ${tempImagePath}`);
             });
 
-            return {originalname, fileName, extension}; 
+            return {originalname, uuid, extension}; 
         } catch (error) {
             this.loggerService.error(`Error saving file: ${error}`);
             return `Error saving file: ${error}`;
@@ -52,7 +52,7 @@ export class FilesService {
     
     async divideFile(savedFile){
         const pythonScriptPath = 'src/files/scripts/divider.py';
-        const { stdout, stderr } = await execPromise(`python3 ${pythonScriptPath} ${savedFile.fileName}`) as child_process.ChildProcessWithoutNullStreams;
+        const { stdout, stderr } = await execPromise(`python3 ${pythonScriptPath} ${savedFile.uuid}`) as child_process.ChildProcessWithoutNullStreams;
         if(stderr) {
             this.loggerService.error(`divider.py: ${stderr}`);
             return stderr;
@@ -61,10 +61,10 @@ export class FilesService {
         return gems;
     }
 
-    async combineFiles(url: string, originalname: string) : Promise<string> {
-        const folderPath = path.join(__dirname, '..', '..', 'uploads', url);
+    async combineFiles(uuid: string, originalname: string) : Promise<string> {
+        const folderPath = path.join(__dirname, '..', '..', 'uploads/gems', uuid);
         const fileGems = await fs.promises.readdir(folderPath);
-        const outputFilePath = path.join(folderPath, `${originalname}`);
+        const outputFilePath = path.join(__dirname, '..', '..', 'uploads/files', `${originalname}-${uuid}`);
         const outputStream = fs.createWriteStream(outputFilePath);
         
         fileGems.sort((a, b) => Number(a.split('-').shift()) - Number(b.split('-').shift()));
@@ -98,10 +98,9 @@ export class FilesService {
         // Saving to server
         try{
             savedFile = await this.saveFile(file);
-
             await new Promise<void>((resolve, reject) => {
                 const checkFileExists = setInterval(() => {
-                  const fileSize = fs.statSync(path.join(__dirname, '..', '..', 'uploads/', `${savedFile.fileName}`)).size;
+                  const fileSize = fs.statSync(path.join(__dirname, '..', '..', 'uploads','files', `${savedFile.uuid}`)).size;
                   if (fileSize > 0) {
                     clearInterval(checkFileExists);
                     resolve();
@@ -115,9 +114,8 @@ export class FilesService {
             });
             // creating gems and deleting temp image
             gems = await this.divideFile(savedFile);
-            this.deleteFileUtil(`uploads/${savedFile.fileName}`)
-
-            this.loggerService.info(`createFile: File ${savedFile.fileName} saved to server`);
+            this.deleteFileUtil(`uploads/files/${savedFile.uuid}`)
+            this.loggerService.info(`createFile: File ${savedFile.uuid} saved to server`);
         }catch(error){
             this.loggerService.error(`createFile: ${error}`);
             return error;
@@ -125,13 +123,12 @@ export class FilesService {
 
         // Saving to db
         try{
-            const createFileDTO = {
+            const createFileDTO : IFile = {
                 originalname: `${savedFile.originalname}${savedFile.extension}`,
-                url: `${savedFile.fileName}.dir`, 
+                uuid: `${savedFile.uuid}`, 
                 ownerID: userID,
                 gems: [{
-                    index: 0, 
-                    url: `${savedFile.fileName}.dir`, //to be changed
+                    index: 0,
                     enc: "none"
                 }]
             }
@@ -145,11 +142,11 @@ export class FilesService {
                 role: [IRole.OWNER, IRole.EDITOR, IRole.VIEWER]
             }
             await this.userService.addFileToUser(userID.toString(), userFileRecord);
-            this.loggerService.info(`File ${savedFile.fileName} added to db and user profile.`);
+            this.loggerService.info(`File ${savedFile.uuid} added to db and user profile.`);
         }catch(error){
-            this.deleteFileUtil(`uploads/${savedFile.fileName}`)
-            await deleteFolderUtil(`uploads/${savedFile.fileName}${savedFile.extension}`, { recursive: true });
-            this.loggerService.error(`Unable to add file : ${savedFile.fileName} to db. Deleted from server. `);
+            this.deleteFileUtil(`uploads/${savedFile.uuid}`)
+            await deleteGemsUtil(`uploads/gems/${savedFile.uuid}`, { recursive: true });
+            this.loggerService.error(`Unable to add file : ${savedFile.uuid} to db. Deleted from server. `);
             return error;
         }
         return resultCreateFile;
@@ -161,12 +158,12 @@ export class FilesService {
             this.loggerService.error(`File with ID ${fileID} does not exist`)
             throw new HttpException('File does not exists', HttpStatus.BAD_REQUEST);
         }
-        if(fs.existsSync(path.join(__dirname, '..', '..', 'uploads', file.url, file.originalname))) {
+        if(fs.existsSync(path.join(__dirname, '..', '..', 'uploads', 'files', `${file.originalname}-${file.uuid}`))) {
             this.loggerService.info('Original file already exists, returning from cache.');
-            return path.join(__dirname, '..', '..', 'uploads', file.url, file.originalname);
+            return path.join(__dirname, '..', '..', 'uploads', 'files', `${file.originalname}-${file.uuid}`);
         }
         try{
-            this.combineFiles(file.url, file.originalname);
+            this.combineFiles(file.uuid, file.originalname);
         }catch(err){
             this.loggerService.error(`downloadFile: ${err}`);
         }
@@ -191,17 +188,18 @@ export class FilesService {
             this.loggerService.error(`File with ID ${fileID} does not exist`)
             throw new HttpException('File does not exists', HttpStatus.BAD_REQUEST);
         }
-        if(location === 'server' || location === 'all'){
+        if(location == 'server' || location == 'all'){
             // Deleting from server
             try {
-                await deleteFolderUtil(`uploads/${file.url}`, { recursive: true });
-                this.loggerService.info(`File ${file.url} deleted from server`);
+                this.deleteFileUtil(`uploads/files/${file.originalname}-${file.uuid}`)
+                await deleteGemsUtil(`uploads/gems/${file.uuid}`, { recursive: true })
+                this.loggerService.info(`File ${file.uuid} deleted from server`);
             }catch (error) {
-                this.loggerService.error(`Failed to delete ${file.url}: ${error}`);
+                this.loggerService.error(`Failed to delete ${file.uuid}: ${error}`);
                 return error;
             }
         }
-        if(location === 'db' || location === 'all'){
+        if(location == 'db' || location == 'all'){
             // Deleting from db
             try{
                 await this.userService.deleteUsersFile(fileID);
@@ -212,6 +210,6 @@ export class FilesService {
                 return error;
             }
         }
-        return file.url;
+        return file.uuid;
     }
 }

@@ -6,7 +6,7 @@ export const FileSchema = new mongoose.Schema({
       type: String,
       required: true,
     },
-    url:{
+    uuid:{
       type: String,
       required: true,
     },
@@ -19,10 +19,6 @@ export const FileSchema = new mongoose.Schema({
         index: {
           type: Number,
           required: true,
-        },
-        url: {
-            type: String,
-            required: true,
         },
         enc: {
           type: String,

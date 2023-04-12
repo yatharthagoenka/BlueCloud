@@ -22,16 +22,13 @@ export interface IUserFileRecord{
     role: IRole[]
 }
 
-export interface IFile{ 
-    _id: ObjectId
+export interface IFile{
     originalname: string
-    url: string
+    uuid: string
     ownerID: ObjectId
     gems?:{
-        _id: ObjectId
         index: number
         enc: string
-        name: string
     }[]
 }
 
