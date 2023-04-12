@@ -8,12 +8,12 @@ if len(sys.argv) < 2:
     sys.exit(1)
 
 file_name = sys.argv[1]
-file_size = os.path.getsize(os.path.join('uploads', os.path.basename(file_name)))
-file_path = os.path.join('uploads', file_name)
+file_size = os.path.getsize(os.path.join('uploads/files', os.path.basename(file_name)))
+file_path = os.path.join('uploads/files', file_name)
 
 gem_size = 1024 * 1024
 num_gems = math.ceil(file_size / gem_size)
-output_dir = os.path.join('uploads', os.path.basename(file_name+".dir"))
+output_dir = os.path.join('uploads/gems', os.path.basename(file_name))
 
 os.makedirs(output_dir, exist_ok=True)
 
@@ -28,7 +28,7 @@ with open(file_path, "rb") as infile:
             output_file = os.path.join(output_dir, f"{gem_count}-gem")
             with open(output_file, "wb") as outfile:
                 outfile.write(gem)
-            gems.append(f"{gem_count}-gem")
+            gems.append(f"SECRET{gem_count}")
 
 gems_json = json.dumps(gems)
 print(gems_json)
