@@ -15,7 +15,7 @@ import { promisify } from 'util';
 
 const exec = util.promisify(child_process.exec);
 const execPromise = promisify(exec);
-const deleteGemsUtil = promisify(fs.rm);
+const deleteFolderUtil = promisify(fs.rm);
 
 @Injectable()
 export class FilesService {
@@ -29,7 +29,7 @@ export class FilesService {
         const { buffer, originalname } = file;
         const extension = extname(originalname);
         const uuid = `${uuidv4()}`;
-        const tempImagePath = `uploads/files/${uuid}`;
+        const tempImagePath = `store/uploads/${uuid}`;
         try {
             const writeStream = fs.createWriteStream(tempImagePath);
             writeStream.write(buffer);
@@ -53,18 +53,20 @@ export class FilesService {
     async divideFile(savedFile){
         const pythonScriptPath = 'src/files/scripts/divider.py';
         const { stdout, stderr } = await execPromise(`python3 ${pythonScriptPath} ${savedFile.uuid}`) as child_process.ChildProcessWithoutNullStreams;
+        if(stdout) {
+            this.loggerService.info(`divider.py: ${stdout}`);
+            return stderr;
+        }
         if(stderr) {
             this.loggerService.error(`divider.py: ${stderr}`);
             return stderr;
         }
-        const gems = JSON.parse(stdout.toString());
-        return gems;
     }
 
     async combineFiles(uuid: string, originalname: string) : Promise<string> {
-        const folderPath = path.join(__dirname, '..', '..', 'uploads/gems', uuid);
+        const folderPath = path.join(__dirname, '..', '..', 'store/gems', uuid);
         const fileGems = await fs.promises.readdir(folderPath);
-        const outputFilePath = path.join(__dirname, '..', '..', 'uploads/files', `${originalname}-${uuid}`);
+        const outputFilePath = path.join(__dirname, '..', '..', 'store/uploads', `${originalname}-${uuid}`);
         const outputStream = fs.createWriteStream(outputFilePath);
         
         fileGems.sort((a, b) => Number(a.split('-').shift()) - Number(b.split('-').shift()));
@@ -98,9 +100,10 @@ export class FilesService {
         // Saving to server
         try{
             savedFile = await this.saveFile(file);
+            // temporary fix - fails in case of larger file upload
             await new Promise<void>((resolve, reject) => {
                 const checkFileExists = setInterval(() => {
-                  const fileSize = fs.statSync(path.join(__dirname, '..', '..', 'uploads','files', `${savedFile.uuid}`)).size;
+                  const fileSize = fs.statSync(path.join(__dirname, '..', '..', 'store', 'uploads', `${savedFile.uuid}`)).size;
                   if (fileSize > 0) {
                     clearInterval(checkFileExists);
                     resolve();
@@ -110,11 +113,10 @@ export class FilesService {
                 setTimeout(() => {
                   clearInterval(checkFileExists);
                   reject(new Error('File was not saved'));
-                }, 10000);
+                }, 1000);
             });
             // creating gems and deleting temp image
-            gems = await this.divideFile(savedFile);
-            this.deleteFileUtil(`uploads/files/${savedFile.uuid}`)
+            await this.divideFile(savedFile);
             this.loggerService.info(`createFile: File ${savedFile.uuid} saved to server`);
         }catch(error){
             this.loggerService.error(`createFile: ${error}`);
@@ -144,8 +146,8 @@ export class FilesService {
             await this.userService.addFileToUser(userID.toString(), userFileRecord);
             this.loggerService.info(`File ${savedFile.uuid} added to db and user profile.`);
         }catch(error){
-            this.deleteFileUtil(`uploads/${savedFile.uuid}`)
-            await deleteGemsUtil(`uploads/gems/${savedFile.uuid}`, { recursive: true });
+            this.deleteFileUtil(`store/uploads/${savedFile.uuid}`)
+            await deleteFolderUtil(`store/gems/${savedFile.uuid}`, { recursive: true });
             this.loggerService.error(`Unable to add file : ${savedFile.uuid} to db. Deleted from server. `);
             return error;
         }
@@ -158,9 +160,9 @@ export class FilesService {
             this.loggerService.error(`File with ID ${fileID} does not exist`)
             throw new HttpException('File does not exists', HttpStatus.BAD_REQUEST);
         }
-        if(fs.existsSync(path.join(__dirname, '..', '..', 'uploads', 'files', `${file.originalname}-${file.uuid}`))) {
+        if(fs.existsSync(path.join(__dirname, '..', '..', 'store', 'uploads', `${file.uuid}`))) {
             this.loggerService.info('Original file already exists, returning from cache.');
-            return path.join(__dirname, '..', '..', 'uploads', 'files', `${file.originalname}-${file.uuid}`);
+            return path.join(__dirname, '..', '..', 'store', 'uploads', `${file.uuid}`);
         }
         try{
             this.combineFiles(file.uuid, file.originalname);
@@ -191,12 +193,17 @@ export class FilesService {
         if(location == 'server' || location == 'all'){
             // Deleting from server
             try {
-                this.deleteFileUtil(`uploads/files/${file.originalname}-${file.uuid}`)
-                await deleteGemsUtil(`uploads/gems/${file.uuid}`, { recursive: true })
-                this.loggerService.info(`File ${file.uuid} deleted from server`);
+                await deleteFolderUtil(`store/files/${file.uuid}`, { recursive: true })
+                this.loggerService.info(`store/files : ${file.uuid} : deleted successfully`);
             }catch (error) {
-                this.loggerService.error(`Failed to delete ${file.uuid}: ${error}`);
+                this.loggerService.error(`store/files : ${file.uuid} : ${error}`);
                 return error;
+            }
+            try{
+                await deleteFolderUtil(`store/gems/${file.uuid}`, { recursive: true })
+                this.loggerService.info(`store/gems : ${file.uuid} : deleted successfully`);
+            }catch(error){
+                this.loggerService.error(`store/gems : ${file.uuid} : ${error}`);
             }
         }
         if(location == 'db' || location == 'all'){
