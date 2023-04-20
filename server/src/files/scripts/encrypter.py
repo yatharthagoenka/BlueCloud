@@ -99,18 +99,18 @@ def encrypter(uuid):
     files = sorted(os.listdir(os.path.join('store/files', os.path.basename(uuid))))
     for index in range(0, len(files)):
         if index % 4 == 0:
-            AESAlgoRotated(uuid, files[index],key_1_1, key_1_2)
+            AESAlgoRotated(uuid, files[index], key_1_1, key_1_2)
         elif index % 4 == 1:
-            ChaChaAlgo(uuid, files[index],key_2, nonce12)
+            ChaChaAlgo(uuid, files[index], key_2, nonce12)
         elif index % 4 == 2:
-            AESGCMAlgo(uuid, files[index],key_3, nonce12)
+            AESGCMAlgo(uuid, files[index], key_3, nonce12)
         else:
-            AESCCMAlgo(uuid, files[index],key_4, nonce13)
+            AESCCMAlgo(uuid, files[index], key_4, nonce13)
         os.remove(os.path.join('store/files', uuid, files[index]))
     secret_information = (key_1_1)+b":::::"+(key_1_2)+b":::::"+(key_2) + \
         b":::::"+(key_3)+b":::::"+(key_4)+b":::::" + \
         (nonce12)+b":::::"+(nonce13)  # All the keys
-
+    
     # Encrypting all the keys with algo1 using key_1
     AESAlgo(uuid, secret_information, key_1)
     # public_key = open(os.path.join('store/files', uuid, os.path.basename("public_key.pem")), "wb")
