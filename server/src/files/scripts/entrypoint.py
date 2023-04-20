@@ -13,10 +13,7 @@ file_size = os.path.getsize(os.path.join('store/uploads', os.path.basename(file_
 file_path = os.path.join('store/uploads', file_name)
 os.makedirs(os.path.join('store/files', os.path.basename(file_name)), exist_ok=True)
 
-# gem_size = 1024 * 1024
-# num_gems = math.ceil(file_size / gem_size)
-
-MAX = 1024*32						# 1	MB	-	max chapter size
+MAX = 1024*32						# 1	MB	-	max gem size
 BUF = 50*1024*1024*1024  			# 50GB	-	memory buffer size
 
 gems_total = 0
@@ -39,21 +36,3 @@ with open(file_path, "rb") as src:
         gems_total += 1
 os.remove(os.path.join('store/uploads', file_name))
 enc.encrypter(file_name)
-
-
-# gems = []
-# with open(file_path, "rb") as infile:
-#         gem_count = 0
-#         while True:
-#             gem = infile.read(gem_size)
-#             if not gem:
-#                 break
-#             gem_count += 1
-#             output_file = os.path.join(output_dir, f"GEM{gem_count}")
-#             with open(output_file, "wb") as outfile:
-#                 outfile.write(gem)
-#             gems.append(f"GEM_{gem_count}")
-
-# gems_json = json.dumps(gems)
-
-

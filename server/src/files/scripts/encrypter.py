@@ -1,12 +1,11 @@
 import os
-
+import json
 from cryptography.fernet import Fernet, MultiFernet
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.primitives.ciphers.aead import (
-    AESCCM, AESGCM, ChaCha20Poly1305)
+from cryptography.hazmat.primitives.ciphers.aead import (AESCCM, AESGCM, ChaCha20Poly1305)
 
-uuid = "0"
+return_json = {}
 
 def readPlainText(filename, gem) -> bytes:
     source_filename = os.path.join('store/files', filename, gem)
@@ -26,9 +25,10 @@ def writeEncryptedText(filename, gem, encryptedData: bytes):
 
 
 def writeEncryptedKeys(uuid, encryptedKeys: bytes):
-    target_file = open(os.path.join('store/files', uuid, os.path.basename("enc_keys")), "wb")
+    target_file = open(os.path.join('store/files', uuid, os.path.basename("enc_keys.pem")), "wb")
     target_file.write(encryptedKeys)
     target_file.close()
+    # return_json['encryptedKeys'] = encryptedKeys.decode("utf-8")
 
 
 def rsaKeyPairGeneration():
@@ -86,8 +86,7 @@ def AESCCMAlgo(filename, gem, key: bytes, nonce: bytes):
     writeEncryptedText(filename, gem, encryptedData)
 
 
-def encrypter(file_uuid):
-    uuid = file_uuid
+def encrypter(uuid):
     os.makedirs(os.path.join('store/gems', os.path.basename(uuid)), exist_ok=True)
     key_1 = Fernet.generate_key()
     key_1_1 = Fernet.generate_key()
@@ -107,12 +106,15 @@ def encrypter(file_uuid):
             AESGCMAlgo(uuid, files[index],key_3, nonce12)
         else:
             AESCCMAlgo(uuid, files[index],key_4, nonce13)
+        os.remove(os.path.join('store/files', uuid, files[index]))
     secret_information = (key_1_1)+b":::::"+(key_1_2)+b":::::"+(key_2) + \
         b":::::"+(key_3)+b":::::"+(key_4)+b":::::" + \
         (nonce12)+b":::::"+(nonce13)  # All the keys
 
     # Encrypting all the keys with algo1 using key_1
     AESAlgo(uuid, secret_information, key_1)
-    public_key = open(os.path.join('store/files', uuid, os.path.basename("public_key.pem")), "wb")
-    public_key.write(key_1)
-    public_key.close()
+    # public_key = open(os.path.join('store/files', uuid, os.path.basename("public_key.pem")), "wb")
+    # public_key.write(key_1)
+    # public_key.close()
+    return_json['pub_key'] = key_1.decode("utf-8")
+    print(json.dumps(return_json))
