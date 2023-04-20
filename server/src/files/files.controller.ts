@@ -33,10 +33,9 @@ export class FilesController {
     async downloadFile(@Res() res, @Query('fileID', new ValidateObjectId()) fileID) {
       try {
         const file = await this.filesService.downloadFile(fileID);
-        this.loggerService.debug(file)
-        return res.status(HttpStatus.OK).download(file);
+        return res.status(HttpStatus.OK).json({res: file})
       } catch (error) {
-        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error downloading file' });
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: error });
       }
     }
 
@@ -47,7 +46,7 @@ export class FilesController {
         await this.filesService.delete(fileID, 'all');
         return res.status(HttpStatus.OK).json({ message: 'File deleted successfully' });
       } catch (error) {
-        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error deleting file' });
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: error });
       }
     }
 }

@@ -16,6 +16,7 @@ import { promisify } from 'util';
 const exec = util.promisify(child_process.exec);
 const execPromise = promisify(exec);
 const deleteFolderUtil = promisify(fs.rm);
+const pythonScriptPath = 'src/files/scripts/entrypoint.py';
 
 @Injectable()
 export class FilesService {
@@ -51,39 +52,51 @@ export class FilesService {
     }
     
     async encryptFile(savedFile){
-        const pythonScriptPath = 'src/files/scripts/entrypoint.py';
-        const { stdout, stderr } = await execPromise(`python3 ${pythonScriptPath} ${savedFile.uuid}`) as child_process.ChildProcessWithoutNullStreams;
+        const { stdout, stderr } = await execPromise(`python3 ${pythonScriptPath} enc ${savedFile.uuid}`) as child_process.ChildProcessWithoutNullStreams;
         if(stdout){
             const keys = JSON.parse(stdout.toString());
             this.loggerService.info(`encrypter.py: encrypted ${savedFile.uuid} : generated keys`);
             return keys;
         }
         if(stderr){
-            this.loggerService.error(`entrypoint.py: ${stderr}`);
+            this.loggerService.error(`entrypoint.py : enc : ${stderr}`);
             return stderr;
         }
     }
 
-    async combineFiles(uuid: string, originalname: string) : Promise<string> {
-        const folderPath = path.join(__dirname, '..', '..', 'store/gems', uuid);
-        const fileGems = await fs.promises.readdir(folderPath);
-        const outputFilePath = path.join(__dirname, '..', '..', 'store/uploads', `${originalname}-${uuid}`);
-        const outputStream = fs.createWriteStream(outputFilePath);
-        
-        fileGems.sort((a, b) => Number(a.split('-').shift()) - Number(b.split('-').shift()));
-                
-        for (const gem of fileGems) {
-            const gemPath = path.join(folderPath, gem);
-            const readStream = fs.createReadStream(gemPath);
-            await new Promise((resolve, reject) => {
-                readStream.pipe(outputStream, { end: false });
-                readStream.on('error', reject);
-                readStream.on('end', resolve);
-            });
+    async decryptFile(uuid: string, pub_key: string) : Promise<string> {
+        const { stdout, stderr } = await execPromise(`python3 ${pythonScriptPath} dec ${uuid} ${pub_key}`) as child_process.ChildProcessWithoutNullStreams;
+        if(stdout){
+            this.loggerService.info(`decrypter.py: ${stdout.toString()}`);
+            // this.loggerService.info(`decrypter.py: decrypted ${uuid} : returning path`);
+            return '';
         }
-        outputStream.end();
-        return outputFilePath;
+        if(stderr){
+            this.loggerService.error(`entrypoint.py : dec : ${stderr}`);
+            return stderr.toString();
+        }
     }
+
+    // async decryptFile(uuid: string, originalname: string) : Promise<string> {
+    //     const folderPath = path.join(__dirname, '..', '..', 'store/gems', uuid);
+    //     const fileGems = await fs.promises.readdir(folderPath);
+    //     const outputFilePath = path.join(__dirname, '..', '..', 'store/uploads', `${originalname}-${uuid}`);
+    //     const outputStream = fs.createWriteStream(outputFilePath);
+        
+    //     fileGems.sort((a, b) => Number(a.split('-').shift()) - Number(b.split('-').shift()));
+                
+    //     for (const gem of fileGems) {
+    //         const gemPath = path.join(folderPath, gem);
+    //         const readStream = fs.createReadStream(gemPath);
+    //         await new Promise((resolve, reject) => {
+    //             readStream.pipe(outputStream, { end: false });
+    //             readStream.on('error', reject);
+    //             readStream.on('end', resolve);
+    //         });
+    //     }
+    //     outputStream.end();
+    //     return outputFilePath;
+    // }
 
     async getUserFiles(userId: ObjectId): Promise<any> {
         return await this.userService.getUserFiles(userId.toString());
@@ -167,7 +180,7 @@ export class FilesService {
             return path.join(__dirname, '..', '..', 'store', 'uploads', `${file.uuid}-${file.uuid}`);
         }
         try{
-            return this.combineFiles(file.uuid, file.originalname);
+            return this.decryptFile(file.uuid, file.pub_key);
         }catch(err){
             this.loggerService.error(`downloadFile: ${err}`);
         }
