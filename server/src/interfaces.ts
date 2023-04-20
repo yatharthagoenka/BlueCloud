@@ -25,6 +25,7 @@ export interface IUserFileRecord{
 export interface IFile{
     originalname: string
     uuid: string
+    pub_key: string
     ownerID: ObjectId
     gems?:{
         index: number
