@@ -34,7 +34,7 @@ export class FilesController {
       try {
         const file = await this.filesService.downloadFile(fileID);
         this.loggerService.debug(file)
-        return res.download(file);
+        return res.status(HttpStatus.OK).download(file);
       } catch (error) {
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error downloading file' });
       }
@@ -42,10 +42,7 @@ export class FilesController {
 
     @Delete('')
     @UseGuards(AuthGuard("jwt"))
-    async deleteFile(
-      @Query('fileID', new ValidateObjectId()) fileID, 
-      @Res() res,
-      ) {
+    async deleteFile(@Query('fileID', new ValidateObjectId()) fileID, @Res() res,) {
       try {
         await this.filesService.delete(fileID, 'all');
         return res.status(HttpStatus.OK).json({ message: 'File deleted successfully' });
