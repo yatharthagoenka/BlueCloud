@@ -66,7 +66,9 @@ const Header = (props) => {
           <Button variant="contained" color="primary"  target="_blank">
             Upgrade to Pro
           </Button>
+          
           <Profile />
+        
         </Stack>
       </ToolbarStyled>
     </AppBarStyled>

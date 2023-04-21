@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { styled, Container, Box } from '@mui/material';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import Header from './header/Header';
 import Sidebar from './sidebar/Sidebar';
 
@@ -20,24 +20,28 @@ const PageWrapper = styled('div')(() => ({
 }));
 
 const FullLayout = () => {
-
   const [isSidebarOpen, setSidebarOpen] = useState(true);
-  const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if(!localStorage.getItem("user")){
+      console.log("nouser")
+      navigate('/auth/login');
+    }
+  }, []);
 
   return (
     <MainWrapper
       className='mainwrapper'
     >
       {/* Sidebar */}
-      <Sidebar isSidebarOpen={isSidebarOpen}
-        isMobileSidebarOpen={isMobileSidebarOpen}
-        onSidebarClose={() => setMobileSidebarOpen(false)} />
+      <Sidebar isSidebarOpen={isSidebarOpen} />
       {/* Main Wrapper */}
       <PageWrapper
         className="page-wrapper"
       >
         {/* Header */}
-        <Header toggleSidebar={() => setSidebarOpen(!isSidebarOpen)} toggleMobileSidebar={() => setMobileSidebarOpen(true)} />
+        <Header toggleSidebar={() => setSidebarOpen(!isSidebarOpen)} />
         {/* PageContent */}
         <Container sx={{
           paddingTop: "20px",
