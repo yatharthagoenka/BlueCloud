@@ -2,6 +2,8 @@ import React from 'react';
 import { Grid, Box, Card, Typography, Stack } from '@mui/material';
 import { Link } from 'react-router-dom';
 import PageContainer from 'src/components/container/PageContainer';
+import logo from 'src/assets/images/logos/bc-logo.png';
+import AuthRegister from './auth/AuthRegister';
 
 const Register2 = () => (
   <PageContainer title="Register" description="this is Register page">
@@ -33,9 +35,33 @@ const Register2 = () => (
         >
           <Card elevation={9} sx={{ p: 4, zIndex: 1, width: '100%', maxWidth: '500px' }}>
             <Box display="flex" alignItems="center" justifyContent="center">
-              <h1>Register</h1>
+              <img src={logo} height={90} />
             </Box>
-            
+            <AuthRegister
+              subtext={
+                <Typography variant="subtitle1" textAlign="center" color="textSecondary" mb={3}>
+                  A cryptographic file storage system
+                </Typography>
+              }
+              subtitle={
+                <Stack direction="row" justifyContent="center" spacing={1} mt={3}>
+                  <Typography color="textSecondary" variant="h6" fontWeight="400">
+                    Already have an Account?
+                  </Typography>
+                  <Typography 
+                    component={Link}
+                    to="/auth/login"
+                    fontWeight="500"
+                    sx={{
+                      textDecoration: 'none',
+                      color: 'primary.main',
+                    }}
+                  >
+                    Sign In
+                  </Typography>
+                </Stack>
+              }
+            />
           </Card>
         </Grid>
       </Grid>
