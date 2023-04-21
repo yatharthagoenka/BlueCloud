@@ -76,28 +76,7 @@ export class FilesService {
             return stderr.toString();
         }
     }
-
-    // async decryptFile(uuid: string, originalname: string) : Promise<string> {
-    //     const folderPath = path.join(__dirname, '..', '..', 'store/gems', uuid);
-    //     const fileGems = await fs.promises.readdir(folderPath);
-    //     const outputFilePath = path.join(__dirname, '..', '..', 'store/uploads', `${originalname}-${uuid}`);
-    //     const outputStream = fs.createWriteStream(outputFilePath);
-        
-    //     fileGems.sort((a, b) => Number(a.split('-').shift()) - Number(b.split('-').shift()));
-                
-    //     for (const gem of fileGems) {
-    //         const gemPath = path.join(folderPath, gem);
-    //         const readStream = fs.createReadStream(gemPath);
-    //         await new Promise((resolve, reject) => {
-    //             readStream.pipe(outputStream, { end: false });
-    //             readStream.on('error', reject);
-    //             readStream.on('end', resolve);
-    //         });
-    //     }
-    //     outputStream.end();
-    //     return outputFilePath;
-    // }
-
+    
     async getUserFiles(userId: ObjectId): Promise<any> {
         return await this.userService.getUserFiles(userId.toString());
     }
