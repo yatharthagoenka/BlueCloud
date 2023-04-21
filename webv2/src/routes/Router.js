@@ -21,7 +21,6 @@ const Router = [
     path: '/',
     element: <BlankLayout />,
     children: [
-      // { path: '/user', element: <Navigate to="/user/dashboard" /> },
       { path: '/', exact: true, element: <Home /> },
       { path: '*', element: <Navigate to="/auth/404" /> },
     ],
