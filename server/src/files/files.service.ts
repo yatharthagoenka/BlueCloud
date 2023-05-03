@@ -76,33 +76,12 @@ export class FilesService {
             return stderr.toString();
         }
     }
-
-    // async decryptFile(uuid: string, originalname: string) : Promise<string> {
-    //     const folderPath = path.join(__dirname, '..', '..', 'store/gems', uuid);
-    //     const fileGems = await fs.promises.readdir(folderPath);
-    //     const outputFilePath = path.join(__dirname, '..', '..', 'store/uploads', `${originalname}-${uuid}`);
-    //     const outputStream = fs.createWriteStream(outputFilePath);
-        
-    //     fileGems.sort((a, b) => Number(a.split('-').shift()) - Number(b.split('-').shift()));
-                
-    //     for (const gem of fileGems) {
-    //         const gemPath = path.join(folderPath, gem);
-    //         const readStream = fs.createReadStream(gemPath);
-    //         await new Promise((resolve, reject) => {
-    //             readStream.pipe(outputStream, { end: false });
-    //             readStream.on('error', reject);
-    //             readStream.on('end', resolve);
-    //         });
-    //     }
-    //     outputStream.end();
-    //     return outputFilePath;
-    // }
-
+    
     async getUserFiles(userId: ObjectId): Promise<any> {
         return await this.userService.getUserFiles(userId.toString());
     }
 
-    async createFile(userID: ObjectId, file: Express.Multer.File) : Promise<string> {
+    async createFile(userID: ObjectId, file: Express.Multer.File) : Promise<IUserFileRecord> {
         const user = await this.userService.findById(userID.toString());
         let savedFile;
         let resultCreateFile;
@@ -153,7 +132,7 @@ export class FilesService {
             const createdFile = new this.fileModel(createFileDTO);
             resultCreateFile = await createdFile.save();
             // save to usersModel
-            const userFileRecord : IUserFileRecord = {
+            var userFileRecord : IUserFileRecord = {
                 originalname: savedFile.originalname,
                 fileID: resultCreateFile._id,
                 role: [IRole.OWNER, IRole.EDITOR, IRole.VIEWER]
@@ -166,7 +145,7 @@ export class FilesService {
             this.loggerService.error(`Unable to add file : ${savedFile.uuid} to db. Deleted from server. `);
             return error;
         }
-        return resultCreateFile;
+        return userFileRecord;
     }
 
     async downloadFile(fileID: ObjectId): Promise<string> {
