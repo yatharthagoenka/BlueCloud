@@ -81,7 +81,7 @@ export class FilesService {
         return await this.userService.getUserFiles(userId.toString());
     }
 
-    async createFile(userID: ObjectId, file: Express.Multer.File) : Promise<string> {
+    async createFile(userID: ObjectId, file: Express.Multer.File) : Promise<IUserFileRecord> {
         const user = await this.userService.findById(userID.toString());
         let savedFile;
         let resultCreateFile;
@@ -132,7 +132,7 @@ export class FilesService {
             const createdFile = new this.fileModel(createFileDTO);
             resultCreateFile = await createdFile.save();
             // save to usersModel
-            const userFileRecord : IUserFileRecord = {
+            var userFileRecord : IUserFileRecord = {
                 originalname: savedFile.originalname,
                 fileID: resultCreateFile._id,
                 role: [IRole.OWNER, IRole.EDITOR, IRole.VIEWER]
@@ -145,7 +145,7 @@ export class FilesService {
             this.loggerService.error(`Unable to add file : ${savedFile.uuid} to db. Deleted from server. `);
             return error;
         }
-        return resultCreateFile;
+        return userFileRecord;
     }
 
     async downloadFile(fileID: ObjectId): Promise<string> {

@@ -3,43 +3,14 @@ import PageContainer from 'src/components/container/PageContainer';
 import DashboardCard from '../../components/shared/DashboardCard';
 import AppService from '../../services/app.service'
 import AuthService from '../../services/auth.service'
-import {Typography,Table,TableBody,TableCell,TableHead,TableRow,Chip,Button} from '@mui/material';
-
-// const files = [
-//     {
-//         id: "1",
-//         name: "Sample file 1",
-//         uuid: "efalnjkfn3423nlkdvkldsv909",
-//         role: "OWNER",
-//         pbg: "error.main",
-//     },
-//     {
-//         id: "2",
-//         name: "Sample file 2",
-//         uuid: "efauiumfehd423nlkdvklds64",
-//         role: "EDITOR",
-//         pbg: "info.main",
-//     },
-//     {
-//         id: "3",
-//         name: "Sample file 3",
-//         uuid: "bfabyhmyumu3nlkdvkldsv909",
-//         role: "EDITOR",
-//         pbg: "info.main",
-//     },
-//     {
-//         id: "4",
-//         name: "Sample file 4",
-//         uuid: "tgretjkf4ewtertkdvkldsv23",
-//         role: "VIEWER",
-//         pbg: "success.main",
-//     },
-// ];
+import {Typography,Table,TableBody,TableCell,TableHead,TableRow,Chip,Button, Grid} from '@mui/material';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 const Files = () => {
     const [files , setFiles] = useState([])
     const [user , setUser] = useState()
-    let currentUser = '';
+    const [selectedFile, setSelectedFile] = useState(null);
+    let currentUser;
 
     useEffect(() => {
         currentUser = AuthService.getCurrentUser();
@@ -72,11 +43,60 @@ const Files = () => {
         );
     }
 
+    const handleFileSelect = (e) => {
+        setSelectedFile(e.target.files[0]);
+    };
+
+    const handleUpload = (e) => {
+        console.log(user._id)
+        const data = new FormData()
+        data.append('file', selectedFile)
+        AppService.uploadFile(data, user._id, JSON.parse(localStorage.getItem("user")).token).then(
+            response => {
+                const updatedFiles = [...files, response.data];
+                setFiles(updatedFiles);
+                setSelectedFile(null);
+            },
+            error => {
+                console.log(error)
+            }
+        );
+    };
+
     return (
         <PageContainer title="Files" description="Access user uploaded files">
 
         <DashboardCard title="My Files">
-            <Typography>All of the uploaded files appear here</Typography>
+            <Grid container justifyContent="space-between">
+                <Grid>
+                    <Typography>All of the uploaded files appear here</Typography>
+                </Grid>
+                <Grid>
+                    <input
+                        id="select-file"
+                        type="file"
+                        onChange={handleFileSelect}
+                        style={{ display: 'none' }}
+                    />
+                    <label htmlFor="select-file">
+                    <Button
+                        variant="text"
+                        component="span"
+                    >
+                        {selectedFile ? selectedFile.name : 'Select File'}
+                    </Button>
+                    </label>
+                    <Button
+                        variant="contained"
+                        component="span"
+                        startIcon={<CloudUploadIcon />}
+                        disabled={!Boolean(selectedFile)}
+                        onClick={handleUpload}
+                    >
+                        Upload
+                    </Button>
+                </Grid>
+            </Grid>
             <Table
             aria-label="simple table"
             sx={{
