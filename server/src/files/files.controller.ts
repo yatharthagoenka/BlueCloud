@@ -33,7 +33,7 @@ export class FilesController {
     async downloadFile(@Res() res, @Query('fileID', new ValidateObjectId()) fileID) {
       try {
         const file = await this.filesService.downloadFile(fileID);
-        return res.status(HttpStatus.OK).json({res: file})
+        return res.status(HttpStatus.OK).download(file)
       } catch (error) {
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: error });
       }

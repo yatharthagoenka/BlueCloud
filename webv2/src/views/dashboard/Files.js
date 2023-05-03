@@ -31,6 +31,23 @@ const Files = () => {
         }
     }, [])
 
+    const downloadFile = (originalname, fileID) => {
+        AppService.downloadFile(fileID, JSON.parse(localStorage.getItem("user")).token).then(
+            response => {
+                console.log(response)
+                const url = window.URL.createObjectURL(new Blob([response.data]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', originalname);
+                document.body.appendChild(link);
+                link.click();
+            },
+            error => {
+                console.log(error)
+            }
+        );
+    }
+
     const deleteFile = (fileID) => {
         AppService.deleteFile(user._id, fileID, JSON.parse(localStorage.getItem("user")).token).then(
             response => {
@@ -153,7 +170,7 @@ const Files = () => {
                                 ></Chip>
                             </TableCell>
                             <TableCell align="right">
-                                    <Button color="success" target="_blank" variant="contained" aria-label="download" size="small">
+                                    <Button color="success" target="_blank" variant="contained" onClick={()=>downloadFile(file.originalname, file.fileID)} aria-label="download" size="small">
                                         Download
                                     </Button>
                                     &nbsp; 

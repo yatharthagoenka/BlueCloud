@@ -68,8 +68,7 @@ export class FilesService {
         const { stdout, stderr } = await execPromise(`python3 ${pythonScriptPath} dec ${uuid} ${pub_key}`) as child_process.ChildProcessWithoutNullStreams;
         if(stdout){
             this.loggerService.info(`decrypter.py: ${stdout.toString()}`);
-            // this.loggerService.info(`decrypter.py: decrypted ${uuid} : returning path`);
-            return '';
+            return `store/uploads/${uuid}`;
         }
         if(stderr){
             this.loggerService.error(`entrypoint.py : dec : ${stderr}`);
@@ -154,9 +153,9 @@ export class FilesService {
             this.loggerService.error(`File with ID ${fileID} does not exist`)
             throw new HttpException('File does not exists', HttpStatus.BAD_REQUEST);
         }
-        if(fs.existsSync(path.join(__dirname, '..', '..', 'store', 'uploads', `${file.originalname}-${file.uuid}`))) {
+        if(fs.existsSync(path.join(__dirname, '..', '..', 'store', 'uploads', `${file.uuid}`))) {
             this.loggerService.info('Original file already exists, returning from cache.');
-            return path.join(__dirname, '..', '..', 'store', 'uploads', `${file.uuid}-${file.uuid}`);
+            return path.join(__dirname, '..', '..', 'store', 'uploads', `${file.uuid}`);
         }
         try{
             return this.decryptFile(file.uuid, file.pub_key);

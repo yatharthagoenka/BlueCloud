@@ -35,7 +35,8 @@ class AppService {
       },
       params:{
         fileID: fileID
-      }
+      },
+      responseType: 'blob'
     });
   }
 
