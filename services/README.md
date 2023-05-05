@@ -2,7 +2,7 @@
 docker build -t flask-srv:latest .
 
 
-## Bind store to container
+## Create volume for store
 ```
 docker volume create store-vol --opt type=none --opt device=/path/to/store --opt o=bind
 ----------
