@@ -24,6 +24,8 @@ services:
       - MONGO_URI=mongodb://db:27017
     depends_on:
       - db
+    volumes:
+      - store-vol:/app/store
     networks:
       - bcloud-net
   app2:
@@ -38,6 +40,8 @@ services:
       - MONGO_URI=mongodb://db:27017
     depends_on:
       - db
+    volumes:
+      - store-vol:/app/store
     networks:
       - bcloud-net
   nginx:
@@ -55,3 +59,5 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf
 volumes:
   mongo-data:
+  store-vol:
+    external: true

@@ -1,0 +1,17 @@
+version: '3'
+networks:
+  bcloud-net:
+    external: true
+services:
+  flask-service:
+    container_name: flask-service
+    build: .
+    ports:
+      - "5000:80"
+    volumes:
+      - store-vol:/app/store
+    networks:
+      - bcloud-net
+volumes:
+  store-vol:
+    external: true

@@ -19,7 +19,7 @@ export class AppController {
   @Get('pytest')
   async getPythonTest(): Promise<string> {
     try {
-      const response = await axios.get('http://localhost:5000/');
+      const response = await axios.get('http://flask-service:5000/');
       return response.data;
     } catch (error) {
       this.loggerService.error(error);

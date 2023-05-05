@@ -1,0 +1,2 @@
+flask
+cryptography==3.4.7

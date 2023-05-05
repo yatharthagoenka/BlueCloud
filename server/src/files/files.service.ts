@@ -12,6 +12,7 @@ import * as path from 'path';
 import * as util from 'util';
 import * as child_process from 'child_process';
 import { promisify } from 'util';
+import axios from 'axios';
 
 const exec = util.promisify(child_process.exec);
 const execPromise = promisify(exec);
@@ -30,7 +31,7 @@ export class FilesService {
         const { buffer, originalname } = file;
         const extension = extname(originalname);
         const uuid = `${uuidv4()}`;
-        const tempImagePath = `store/uploads/${uuid}`;
+        const tempImagePath = `/app/store/uploads/${uuid}`;
         try {
             return new Promise((resolve, reject) => {
                 const writeStream = fs.createWriteStream(tempImagePath);
@@ -54,28 +55,36 @@ export class FilesService {
         } 
     }
     
-    async encryptFile(savedFile){
-        const { stdout, stderr } = await execPromise(`python3 ${pythonScriptPath} enc ${savedFile.uuid}`) as child_process.ChildProcessWithoutNullStreams;
-        if(stdout){
-            const keys = JSON.parse(stdout.toString());
-            this.loggerService.info(`encrypter.py: encrypted ${savedFile.uuid} : generated keys`);
-            return keys;
-        }
-        if(stderr){
-            this.loggerService.error(`entrypoint.py : enc : ${stderr}`);
-            return stderr;
+    async encryptFile(savedFile) {
+        // const { stdout, stderr } = await execPromise(`python3 ${pythonScriptPath} enc ${savedFile.uuid}`) as child_process.ChildProcessWithoutNullStreams;
+        // if(stdout){
+        //     const keys = JSON.parse(stdout.toString());
+        //     this.loggerService.info(`encrypter.py: encrypted ${savedFile.uuid} : generated keys`);
+        //     return keys;
+        // }
+        try {
+            const response = await axios.post('http://flask-service:5000/encrypt', {
+                uuid: savedFile.uuid,
+            });
+            console.log(response.data.pub_key);
+            return response.data.pub_key;
+        } catch (error) {
+            this.loggerService.error(`ecvryptFile : ${error}`);
+            return JSON.stringify({ error: `Flask: ${error}` });
         }
     }
 
     async decryptFile(uuid: string, pub_key: string) : Promise<string> {
-        const { stdout, stderr } = await execPromise(`python3 ${pythonScriptPath} dec ${uuid} ${pub_key}`) as child_process.ChildProcessWithoutNullStreams;
-        if(stdout){
-            this.loggerService.info(`decrypter.py: ${stdout.toString()}`);
+        try {
+            const response = await axios.post('http://flask-service:5000/decrypt', {
+                uuid: uuid,
+                pub_key: pub_key
+            });
+            this.loggerService.info(`decryptFile: ${uuid} decrypted successfully`);
             return `store/uploads/${uuid}`;
-        }
-        if(stderr){
-            this.loggerService.error(`entrypoint.py : dec : ${stderr}`);
-            return stderr.toString();
+        } catch (error) {
+            this.loggerService.error(`decrypter : ${error}`);
+            return JSON.stringify({ error: `Flask: ${error}` });
         }
     }
     
@@ -95,7 +104,7 @@ export class FilesService {
         // Saving to server
         try{
             savedFile = await this.saveFile(file);
-            var keys = await this.encryptFile(savedFile);
+            var pub_key = await this.encryptFile(savedFile);
             this.loggerService.info(`createFile: File ${savedFile.uuid} saved to server`);
         }catch(error){
             this.loggerService.error(`createFile: ${error}`);
@@ -107,7 +116,7 @@ export class FilesService {
             const createFileDTO : IFile = {
                 originalname: `${savedFile.originalname}${savedFile.extension}`,
                 uuid: `${savedFile.uuid}`,
-                pub_key: `${keys.pub_key}`,
+                pub_key: `${pub_key}`,
                 ownerID: userID,
                 gems: [{
                     index: 0,
@@ -176,7 +185,6 @@ export class FilesService {
                 this.loggerService.info(`store/files : ${file.uuid} : deleted successfully`);
             }catch (error) {
                 this.loggerService.error(`store/files : ${file.uuid} : ${error}`);
-                return error;
             }
             try{
                 await deleteFolderUtil(`store/gems/${file.uuid}`, { recursive: true })
@@ -193,7 +201,6 @@ export class FilesService {
                 this.loggerService.info(`File deleted from db: ${fileID}`);
             }catch(error){
                 this.loggerService.error(`Unable to delete file from db: ${error}`);
-                return error;
             }
         }
         return file.uuid;
