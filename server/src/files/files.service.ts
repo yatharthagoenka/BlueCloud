@@ -56,12 +56,6 @@ export class FilesService {
     }
     
     async encryptFile(savedFile) {
-        // const { stdout, stderr } = await execPromise(`python3 ${pythonScriptPath} enc ${savedFile.uuid}`) as child_process.ChildProcessWithoutNullStreams;
-        // if(stdout){
-        //     const keys = JSON.parse(stdout.toString());
-        //     this.loggerService.info(`encrypter.py: encrypted ${savedFile.uuid} : generated keys`);
-        //     return keys;
-        // }
         try {
             const response = await axios.post('http://flask-service:5000/encrypt', {
                 uuid: savedFile.uuid,
@@ -104,6 +98,7 @@ export class FilesService {
         // Saving to server
         try{
             savedFile = await this.saveFile(file);
+            var fileSize = (fs.statSync(path.join(__dirname, '..', '..', 'store', 'uploads', `${savedFile.uuid}`)).size)/1000;
             var pub_key = await this.encryptFile(savedFile);
             this.loggerService.info(`createFile: File ${savedFile.uuid} saved to server`);
         }catch(error){
@@ -111,12 +106,14 @@ export class FilesService {
             return error;
         }
 
+
         // Saving to db
         try{
             const createFileDTO : IFile = {
                 originalname: `${savedFile.originalname}${savedFile.extension}`,
                 uuid: `${savedFile.uuid}`,
                 pub_key: `${pub_key}`,
+                size: fileSize,
                 ownerID: userID,
                 gems: [{
                     index: 0,
@@ -130,6 +127,7 @@ export class FilesService {
             var userFileRecord : IUserFileRecord = {
                 originalname: savedFile.originalname,
                 fileID: resultCreateFile._id,
+                size: fileSize,
                 role: [IRole.OWNER, IRole.EDITOR, IRole.VIEWER]
             }
             await this.userService.addFileToUser(userID.toString(), userFileRecord);
@@ -172,7 +170,7 @@ export class FilesService {
         });
     }
     
-    async delete(fileID: ObjectId, location: string): Promise<string> {
+    async delete(userID: ObjectId, fileID: ObjectId, location: string): Promise<string> {
         const file = await this.fileModel.findById(fileID.toString());
         if(!file) {
             this.loggerService.error(`File with ID ${fileID} does not exist`)
@@ -196,7 +194,7 @@ export class FilesService {
         if(location == 'db' || location == 'all'){
             // Deleting from db
             try{
-                await this.userService.deleteUsersFile(fileID);
+                await this.userService.deleteUsersFile(userID, fileID, file.size);
                 await this.fileModel.findByIdAndDelete(fileID);
                 this.loggerService.info(`File deleted from db: ${fileID}`);
             }catch(error){

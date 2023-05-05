@@ -41,9 +41,13 @@ export class FilesController {
 
     @Delete('')
     @UseGuards(AuthGuard("jwt"))
-    async deleteFile(@Query('fileID', new ValidateObjectId()) fileID, @Res() res,) {
+    async deleteFile(
+      @Query('fileID', new ValidateObjectId()) fileID,
+      @Query('userID', new ValidateObjectId()) userID,
+      @Res() res
+      ) {
       try {
-        await this.filesService.delete(fileID, 'all');
+        await this.filesService.delete(userID, fileID, 'all');
         return res.status(HttpStatus.OK).json({ message: 'File deleted successfully' });
       } catch (error) {
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: error });

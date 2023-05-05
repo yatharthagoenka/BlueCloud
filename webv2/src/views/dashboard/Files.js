@@ -3,13 +3,14 @@ import PageContainer from 'src/components/container/PageContainer';
 import DashboardCard from '../../components/shared/DashboardCard';
 import AppService from '../../services/app.service'
 import AuthService from '../../services/auth.service'
-import {Typography,Table,TableBody,TableCell,TableHead,TableRow,Chip,Button, Grid} from '@mui/material';
+import {Typography,Table,TableBody,TableCell,TableHead,TableRow,Chip,Button,Grid, CircularProgress} from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 const Files = () => {
     const [files , setFiles] = useState([])
     const [user , setUser] = useState()
     const [selectedFile, setSelectedFile] = useState(null);
+    const [uploadFlag, setUploadFlag] = useState(false);
     let currentUser;
 
     useEffect(() => {
@@ -65,13 +66,14 @@ const Files = () => {
     };
 
     const handleUpload = (e) => {
-        console.log(user._id)
+        setUploadFlag(true);
         const data = new FormData()
         data.append('file', selectedFile)
         AppService.uploadFile(data, user._id, JSON.parse(localStorage.getItem("user")).token).then(
             response => {
                 const updatedFiles = [...files, response.data];
                 setFiles(updatedFiles);
+                setUploadFlag(false)
                 setSelectedFile(null);
             },
             error => {
@@ -89,6 +91,9 @@ const Files = () => {
                     <Typography>All of the uploaded files appear here</Typography>
                 </Grid>
                 <Grid>
+                    {uploadFlag ?
+                        <CircularProgress size={20} style={{ marginRight: 10 }} /> : <></>
+                    }
                     <input
                         id="select-file"
                         type="file"

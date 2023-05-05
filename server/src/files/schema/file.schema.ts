@@ -13,6 +13,9 @@ export const FileSchema = new mongoose.Schema({
     pub_key:{
       type: String,
     },
+    size:{
+      type: Number,
+    },
     ownerID:{
       type: mongoose.Schema.Types.ObjectId,
       required: true,

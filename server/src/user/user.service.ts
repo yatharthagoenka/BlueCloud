@@ -4,19 +4,25 @@ import { ObjectId } from 'mongodb';
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
 import { LoginDTO, RegisterDTO } from '../authentication/dto/auth.dto';
-import { IPayload, IUser } from 'src/interfaces';
+import { IPayload, IUser, IActivityAction } from 'src/interfaces';
 
 @Injectable()
 export class UserService {
   constructor( @InjectModel('User') private userModel: Model<IUser>) {}
 
   async create(registerDTO: RegisterDTO) : Promise<IUser> {
-    const { email } = registerDTO;
-    const user = await this.userModel.findOne({ email });
+    const { username } = registerDTO;
+    const user = await this.userModel.findOne({ username });
     if(user){
-      throw new HttpException('User already exists with given email', HttpStatus.BAD_REQUEST);
+      throw new HttpException('User already exists with given username', HttpStatus.BAD_REQUEST);
     }
     const createdUser : IUser = new this.userModel(registerDTO);
+    const activityRecord = {
+        time: new Date(),
+        action: IActivityAction.REGISTER
+    }
+    createdUser.storage = 0;
+    createdUser.activity.push(activityRecord)
     return await createdUser.save();
   }
 
@@ -57,16 +63,24 @@ export class UserService {
   }
 
   async addFileToUser(userID: string, file: any){
+    const user = await this.userModel.findById(userID);
+    const updatedStorage = user.storage + file.size;
     await this.userModel.updateOne(
       { _id: userID },
-      { $push: { files: file } }
+      { $push: { files: file }, $set: { storage: updatedStorage } }
     );
   }
 
-  async deleteUsersFile(fileID: ObjectId){
+  async deleteUsersFile(userID: ObjectId, fileID: ObjectId, size: number){
     await this.userModel.updateMany(
       { files: { $elemMatch: { fileID: fileID } } },
       { $pull: { files: { fileID: fileID } } }
+    );
+    const user = await this.userModel.findById(userID);
+    const updatedStorage = user.storage - size;
+    await this.userModel.updateOne(
+      { _id: userID },
+      { $set: {storage: updatedStorage} }
     );
   }
 }

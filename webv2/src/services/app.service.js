@@ -2,11 +2,22 @@ import axios from 'axios';
 
 class AppService {
   async getTestContent() {
-    return axios.get(process.env.REACT_APP_API_URL);
+    return await axios.get(process.env.REACT_APP_API_URL);
+  }
+
+  async getUser(userID, authToken){
+    return await axios.get(process.env.REACT_APP_API_URL + 'user',{
+      headers: {
+        Authorization: `Bearer ${authToken}`
+      },
+      params:{
+        userID
+      }
+    })
   }
   
   async getUserFiles(userID, authToken) {
-    return axios.get(process.env.REACT_APP_API_URL + 'files/user', {
+    return await axios.get(process.env.REACT_APP_API_URL + 'files/user', {
       headers: {
         Authorization: `Bearer ${authToken}`
       },
@@ -17,7 +28,7 @@ class AppService {
   }
   
   async uploadFile(file, userID, authToken) {
-    return axios.post(process.env.REACT_APP_API_URL + 'files/upload', file, {
+    return await axios.post(process.env.REACT_APP_API_URL + 'files/upload', file, {
       headers: {
         'Content-Type': 'multipart/form-data',
         Authorization: `Bearer ${authToken}`
@@ -29,7 +40,7 @@ class AppService {
   }
   
   async downloadFile(fileID, authToken) {
-    return axios.get(process.env.REACT_APP_API_URL + 'files/download', {
+    return await axios.get(process.env.REACT_APP_API_URL + 'files/download', {
       headers: {
         Authorization: `Bearer ${authToken}`
       },
@@ -41,7 +52,7 @@ class AppService {
   }
 
   async deleteFile(userID, fileID, authToken) {
-    return axios.delete(process.env.REACT_APP_API_URL + 'files', {
+    return await axios.delete(process.env.REACT_APP_API_URL + 'files', {
       headers: {
         Authorization: `Bearer ${authToken}`
       },

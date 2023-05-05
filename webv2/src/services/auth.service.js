@@ -2,7 +2,7 @@ import axios from "axios";
 
 class AuthService {
   async login(username, password) {
-    return axios
+    return await axios
       .post(`${process.env.REACT_APP_API_URL}` + "auth/login", {
         username,
         password
@@ -20,12 +20,11 @@ class AuthService {
     localStorage.removeItem("user");
   }
 
-  async register(user) {
-    console.log(user)
+  async register(user){
     const username = user.username;
     const password = user.password;
     const email = user.email;
-    return axios.post(process.env.REACT_APP_API_URL + "auth/register", {
+    return await axios.post(process.env.REACT_APP_API_URL + "auth/register", {
       username,
       email,
       password

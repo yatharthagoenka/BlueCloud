@@ -1,12 +1,26 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import Chart from 'react-apexcharts';
 import { useTheme } from '@mui/material/styles';
 import { Grid, Stack, Typography, Avatar } from '@mui/material';
 import { IconArrowUpLeft } from '@tabler/icons';
-
 import DashboardCard from '../../../components/shared/DashboardCard';
+import authService from 'src/services/auth.service';
+import appService from 'src/services/app.service';
 
 const StorageStats  = () => {
+  const [user , setUser] = useState();
+  const [storage, setStorage] = useState(0);
+
+  useEffect(() => {
+      const localStorageRecord = authService.getCurrentUser();
+      const fetchUser = async () => {
+        const currentUser = await appService.getUser(localStorageRecord.user._id, localStorageRecord.token);
+        setUser(currentUser.data);
+        setStorage(currentUser.data.storage)
+      };
+      fetchUser();
+  }, []);
+
   // chart color
   const theme = useTheme();
   const primary = theme.palette.primary.main;
@@ -59,7 +73,7 @@ const StorageStats  = () => {
       },
     ],
   };
-  const seriescolumnchart = [35, 65];
+  const seriescolumnchart = [storage, 512000-storage];
 
   return (
     <DashboardCard title="Storage Used">
@@ -67,7 +81,7 @@ const StorageStats  = () => {
         {/* column */}
         <Grid item xs={7} sm={7}>
           <Typography variant="h3" fontWeight="700">
-            5,258 MB
+            {storage/1000} MB
           </Typography>
           <Stack direction="row" spacing={1} mt={2} alignItems="center">
             <Avatar sx={{ bgcolor: successlight, width: 27, height: 27 }}>
