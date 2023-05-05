@@ -31,20 +31,23 @@ export class FilesService {
         const extension = extname(originalname);
         const uuid = `${uuidv4()}`;
         const tempImagePath = `store/uploads/${uuid}`;
-        try {deleteFolderUtil
-            const writeStream = fs.createWriteStream(tempImagePath);
-            writeStream.write(buffer);
-
-            writeStream.on('error', (error) => {
-                this.loggerService.error(`Error saving file: ${error}`);
-                return `Error saving file: ${error}`;
+        try {
+            return new Promise((resolve, reject) => {
+                const writeStream = fs.createWriteStream(tempImagePath);
+            
+                writeStream.on('error', (error) => {
+                  this.loggerService.error(`Error saving file: ${error}`);
+                  reject(`Error saving file: ${error}`);
+                });
+            
+                writeStream.on('finish', () => {
+                  this.loggerService.info(`Temporary image saved successfully: ${tempImagePath}`);
+                  resolve({ originalname, uuid, extension });
+                });
+            
+                writeStream.write(buffer);
+                writeStream.end();
             });
-
-            writeStream.on('finish', () => {
-                this.loggerService.info(`Temporary image saved successfully: ${tempImagePath}`);
-            });
-
-            return {originalname, uuid, extension}; 
         } catch (error) {
             this.loggerService.error(`Error saving file: ${error}`);
             return `Error saving file: ${error}`;
@@ -92,22 +95,6 @@ export class FilesService {
         // Saving to server
         try{
             savedFile = await this.saveFile(file);
-            // temporary fix - fails in case of larger file upload
-            await new Promise<void>((resolve, reject) => {
-                const checkFileExists = setInterval(() => {
-                  const fileSize = fs.statSync(path.join(__dirname, '..', '..', 'store', 'uploads', `${savedFile.uuid}`)).size;
-                  if (fileSize > 0) {
-                    clearInterval(checkFileExists);
-                    resolve();
-                  }
-                }, 100);
-          
-                setTimeout(() => {
-                  clearInterval(checkFileExists);
-                  reject(new Error('File was not saved'));
-                }, 1000);
-            });
-            // creating gems and deleting temp image
             var keys = await this.encryptFile(savedFile);
             this.loggerService.info(`createFile: File ${savedFile.uuid} saved to server`);
         }catch(error){
