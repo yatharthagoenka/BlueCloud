@@ -20,7 +20,11 @@ class AuthService {
     localStorage.removeItem("user");
   }
 
-  async register(username, email, password) {
+  async register(user) {
+    console.log(user)
+    const username = user.username;
+    const password = user.password;
+    const email = user.email;
     return axios.post(process.env.REACT_APP_API_URL + "auth/register", {
       username,
       email,
