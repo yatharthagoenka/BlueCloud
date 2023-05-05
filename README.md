@@ -9,7 +9,11 @@ A cryptographic cloud-based file storage system.
 docker network ls                       ---> List all networks
 docker network inspect <network_id>     ---> Inspect a network
 
-docker network create bcloud_net
+docker network create bcloud-net
+```
+- Create volume for store
+```
+docker volume create store-vol --opt type=none --opt device=/path/to/store --opt o=bind
 ```
 
 - To automatically update node modules to latest versions, run the following commands in root directory of project: 
