@@ -4,7 +4,7 @@ import { ObjectId } from 'mongodb';
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
 import { LoginDTO, RegisterDTO } from '../authentication/dto/auth.dto';
-import { IPayload, IUser, IActivityAction } from 'src/interfaces';
+import { IPayload, IUser, IActivityAction, IUserActivityRecord } from 'src/interfaces';
 
 @Injectable()
 export class UserService {
@@ -35,6 +35,19 @@ export class UserService {
       throw new HttpException('User does not exists', HttpStatus.BAD_REQUEST);
     }
     if(await bcrypt.compare(password, user.password)) {
+      const activityRecord : IUserActivityRecord = {
+        time: new Date(),
+        action: IActivityAction.LOGIN
+      }
+      await this.userModel.updateOne(
+        { _id: user._id },
+        { $push: {
+          activity: {
+            $each: [activityRecord],
+            $slice: -5
+          }
+        }}
+      );
       return user;
     }else{
       throw new HttpException('Invalid credentials. Try again', HttpStatus.BAD_REQUEST);
@@ -56,6 +69,18 @@ export class UserService {
     return await this.userModel.findById(userID).select('files');
   }
 
+  async getUserActivity(userID: ObjectId){
+    const user = await this.userModel.findById(userID).select('activity');
+    const recentActivity = user.activity?.sort((a, b) => b.time.getTime() - a.time.getTime());
+    return recentActivity;
+  }
+
+  async getLargestFiles(userID: ObjectId){
+    const user = await this.userModel.findById(userID).select('files');
+    const largestFiles = user.files.sort((a, b) => b.size - a.size).slice(0, 5);
+    return largestFiles;
+  }
+
   async editUser(id: string, payload: any){
     const userID = { _id: new ObjectId(id) };
     const editedUser = await this.userModel.findByIdAndUpdate(userID, payload, { new: true });
@@ -65,9 +90,20 @@ export class UserService {
   async addFileToUser(userID: string, file: any){
     const user = await this.userModel.findById(userID);
     const updatedStorage = user.storage + file.size;
+    const activityRecord : IUserActivityRecord = {
+      time: new Date(),
+      action: IActivityAction.UPLOAD
+    }
     await this.userModel.updateOne(
       { _id: userID },
-      { $push: { files: file }, $set: { storage: updatedStorage } }
+      { $push: { 
+          files: file, 
+          activity: {
+            $each: [activityRecord],
+            $slice: -5
+          } 
+        }, 
+        $set: { storage: updatedStorage } }
     );
   }
 

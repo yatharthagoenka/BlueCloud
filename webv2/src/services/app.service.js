@@ -15,9 +15,31 @@ class AppService {
       }
     })
   }
+
+  async getUserActivity(userID, authToken){
+    return await axios.get(process.env.REACT_APP_API_URL + 'user/activity',{
+      headers: {
+        Authorization: `Bearer ${authToken}`
+      },
+      params:{
+        userID
+      }
+    })
+  }
   
   async getUserFiles(userID, authToken) {
     return await axios.get(process.env.REACT_APP_API_URL + 'files/user', {
+      headers: {
+        Authorization: `Bearer ${authToken}`
+      },
+      params:{
+        userID: userID
+      }
+    });
+  }
+  
+  async getLargestFiles(userID, authToken) {
+    return await axios.get(process.env.REACT_APP_API_URL + 'user/largestFiles', {
       headers: {
         Authorization: `Bearer ${authToken}`
       },

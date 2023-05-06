@@ -1,7 +1,7 @@
 # BlueCloud
 A cryptographic cloud-based file storage system.
 
-Check it out [here](http://3.26.196.196/auth/login)
+Check it out [here](http://3.26.196.196/)
 
 
 ## Setting up docker for `server`:

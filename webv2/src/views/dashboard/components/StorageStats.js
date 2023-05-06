@@ -16,7 +16,8 @@ const StorageStats  = () => {
       const fetchUser = async () => {
         const currentUser = await appService.getUser(localStorageRecord.user._id, localStorageRecord.token);
         setUser(currentUser.data);
-        setStorage(currentUser.data.storage)
+        const num = currentUser.data.storage/1000;
+        setStorage(Number(num.toFixed(3)))
       };
       fetchUser();
   }, []);
@@ -73,7 +74,7 @@ const StorageStats  = () => {
       },
     ],
   };
-  const seriescolumnchart = [storage, 512000-storage];
+  const seriescolumnchart = [storage, 512-storage];
 
   return (
     <DashboardCard title="Storage Used">
@@ -81,7 +82,7 @@ const StorageStats  = () => {
         {/* column */}
         <Grid item xs={7} sm={7}>
           <Typography variant="h3" fontWeight="700">
-            {storage/1000} MB
+            {storage} MB
           </Typography>
           <Stack direction="row" spacing={1} mt={2} alignItems="center">
             <Avatar sx={{ bgcolor: successlight, width: 27, height: 27 }}>

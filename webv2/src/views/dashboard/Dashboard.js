@@ -4,6 +4,8 @@ import PageContainer from 'src/components/container/PageContainer';
 import GlobalActivity from './components/GlobalActivity';
 import StorageStats from './components/StorageStats';
 import MonthlyUsage from './components/MonthlyUsage';
+import RecentActivity from './components/RecentActivity';
+import LargestFiles from './components/LargestFiles';
 
 const Dashboard = () => {
   return (
@@ -22,6 +24,12 @@ const Dashboard = () => {
                 <MonthlyUsage />
               </Grid>
             </Grid>
+          </Grid>
+          <Grid item xs={12} lg={4}>
+            <RecentActivity />
+          </Grid>
+          <Grid item xs={12} lg={8}>
+            <LargestFiles />
           </Grid>
         </Grid>
       </Box>

@@ -3,8 +3,9 @@ import PageContainer from 'src/components/container/PageContainer';
 import DashboardCard from '../../components/shared/DashboardCard';
 import AppService from '../../services/app.service'
 import AuthService from '../../services/auth.service'
-import {Typography,Table,TableBody,TableCell,TableHead,TableRow,Chip,Button,Grid, CircularProgress} from '@mui/material';
+import {Typography,Table,TableBody,TableCell,TableHead,TableRow,Chip,Button,Grid} from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { LoadingButton } from '@mui/lab';
 
 const Files = () => {
     const [files , setFiles] = useState([])
@@ -91,9 +92,6 @@ const Files = () => {
                     <Typography>All of the uploaded files appear here</Typography>
                 </Grid>
                 <Grid>
-                    {uploadFlag ?
-                        <CircularProgress size={20} style={{ marginRight: 10 }} /> : <></>
-                    }
                     <input
                         id="select-file"
                         type="file"
@@ -108,15 +106,16 @@ const Files = () => {
                         {selectedFile ? selectedFile.name : 'Select File'}
                     </Button>
                     </label>
-                    <Button
-                        variant="contained"
-                        component="span"
-                        startIcon={<CloudUploadIcon />}
-                        disabled={!Boolean(selectedFile)}
+                    <LoadingButton
+                        color="primary"
                         onClick={handleUpload}
+                        loading={uploadFlag}
+                        loadingPosition="start"
+                        startIcon={<CloudUploadIcon />}
+                        variant="contained"
                     >
-                        Upload
-                    </Button>
+                        <span>Upload</span>
+                    </LoadingButton>
                 </Grid>
             </Grid>
             <Table
@@ -167,7 +166,8 @@ const Files = () => {
                                 <Chip
                                     sx={{
                                         px: "4px",
-                                        backgroundColor: file.pbg,
+                                        backgroundColor: file.role[0] === "owner" ? "primary.main" : 
+                                            file.role[0] === "editor" ? "secondary.main" : "warning.main",
                                         color: "#fff",
                                     }}
                                     size="small"
