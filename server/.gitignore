@@ -1,6 +1,5 @@
 # env
 .env
-uploads
 
 # compiled output
 dist
@@ -18,9 +17,6 @@ lerna-debug.log*
 
 # Cache
 src/files/scripts/__pycache__/
-
-# Store
-/store/**
 
 # OS
 .DS_Store
