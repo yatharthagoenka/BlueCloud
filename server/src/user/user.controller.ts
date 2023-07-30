@@ -1,4 +1,4 @@
-import { Controller, Get, Res, HttpStatus, Param, NotFoundException, Post, Body, Put, Query, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Res, HttpStatus, NotFoundException, Body, Patch, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport/dist/auth.guard';
 import { ValidateObjectId } from '../shared/validate-object-id.pipes';
 import { UserService } from 'src/user/user.service';
@@ -44,7 +44,7 @@ export class UserController {
         }
     }
 
-    @Put('/edit')
+    @Patch('/edit')
     @UseGuards(AuthGuard("jwt"))
     async editUser(@Res() res, @Query('userID', new ValidateObjectId()) userID, @Body() editUserDTO){
         const editedUser = await this.userService.editUser(userID, editUserDTO);

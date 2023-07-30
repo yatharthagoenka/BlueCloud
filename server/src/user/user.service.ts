@@ -83,7 +83,7 @@ export class UserService {
 
   async editUser(id: string, payload: any){
     const userID = { _id: new ObjectId(id) };
-    const editedUser = await this.userModel.findByIdAndUpdate(userID, payload, { new: true });
+    const editedUser = await this.userModel.findByIdAndUpdate(userID, {[payload.field]: payload.value});
     return editedUser;
   }
 

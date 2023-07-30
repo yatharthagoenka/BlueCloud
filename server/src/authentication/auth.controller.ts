@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
+import { Post, Controller, Res, HttpStatus, Body } from '@nestjs/common';
 import { RegisterDTO, LoginDTO } from './dto/auth.dto';
 import { AuthService } from './auth.service';
 import { UserService } from 'src/user/user.service';
@@ -12,26 +12,31 @@ export class AuthController {
   ) {}
 
     @Post('register')
-    async register(@Body() registerDTO: RegisterDTO) {
+    async register(@Res() res, @Body() registerDTO: RegisterDTO) {
+      try{
         const user : IUser = await this.userService.create(registerDTO);
         const payload : IPayload = {
             username: user.username,
         };
         const token = await this.authService.signPayload(payload);
-        return { user, token };
+        return res.status(HttpStatus.OK).json({ user, token });
+      }
+      catch(error: any){
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Invalid request. Try again.' });
+      }
     }
     
     @Post('login')
-    async login(@Body() loginDTO: LoginDTO) {
+    async login(@Res() res, @Body() loginDTO: LoginDTO) {
       const user = await this.userService.findByLogin(loginDTO);
       const payload : IPayload = {
         username: user.username,
       };
       try{
         const token = await this.authService.signPayload(payload);
-        return { user, token};
+        return res.status(HttpStatus.OK).json({ user, token });
       }catch (error: any) {
-        throw new BadRequestException('Invalid request. Try again.');
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Invalid request. Try again.' });
       }
     }
 }

@@ -4,6 +4,7 @@ import { Box, Typography, Button } from '@mui/material';
 import { Stack } from '@mui/system';
 import CustomTextField from '../../../components/shared/CustomTextField';
 import authService from 'src/services/auth.service';
+import Snackbar from '@mui/material/Snackbar';
 
 const AuthRegister = ({ title, subtitle, subtext }) => {
     const navigate = useNavigate();
@@ -12,6 +13,12 @@ const AuthRegister = ({ title, subtitle, subtext }) => {
         email: "",
         password : ""
     })
+    const [showSnackbar, setShowSnackbar] = useState(false);
+    const [snackBarMessage, setSnackBarMessage] = useState("");
+
+    const handleSnackbarClose = (event, reason) => {
+        setShowSnackbar(false);
+    };
 
     const handleChange = (e) => {
         const {id, value} = e.target   
@@ -28,6 +35,9 @@ const AuthRegister = ({ title, subtitle, subtext }) => {
                 window.location.reload();
             },
             error => {
+                const errorMessage = error.response?.data?.message || "An error occurred while logging in.";
+                setSnackBarMessage(errorMessage);
+                setShowSnackbar(true);
                 console.log(error)
             }
         );
@@ -62,6 +72,13 @@ const AuthRegister = ({ title, subtitle, subtext }) => {
             </Button>
         </Box>
         {subtitle}
+        <Snackbar
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            open={showSnackbar}
+            autoHideDuration={3000}
+            onClose={handleSnackbarClose}
+            message={snackBarMessage}
+        />
     </>
     )
 };

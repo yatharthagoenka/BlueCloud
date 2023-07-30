@@ -84,6 +84,21 @@ class AppService {
       }
     });
   }
+
+  async updateUser(field, value, userID, authToken) {
+    return await axios.patch(`${process.env.REACT_APP_API_URL}` + "user/edit", {
+        field, 
+        value
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        },
+        params:{
+          userID: userID
+        }
+      });
+  }
 }
 
 export default AppService = new AppService();
