@@ -4,7 +4,7 @@ import { Box, Typography, Button } from '@mui/material';
 import { Stack } from '@mui/system';
 import CustomTextField from '../../../components/shared/CustomTextField';
 import authService from 'src/services/auth.service';
-import Snackbar from '@mui/material/Snackbar';
+import SnackbarComponent from 'src/components/shared/Snackbar';
 
 const AuthRegister = ({ title, subtitle, subtext }) => {
     const navigate = useNavigate();
@@ -15,6 +15,7 @@ const AuthRegister = ({ title, subtitle, subtext }) => {
     })
     const [showSnackbar, setShowSnackbar] = useState(false);
     const [snackBarMessage, setSnackBarMessage] = useState("");
+    const [snackBarSeverity, setSnackBarSeverity] = useState("success");
 
     const handleSnackbarClose = (event, reason) => {
         setShowSnackbar(false);
@@ -33,10 +34,12 @@ const AuthRegister = ({ title, subtitle, subtext }) => {
             () => {
                 navigate("/user/dashboard");
                 window.location.reload();
+                setSnackBarSeverity("success")
             },
             error => {
-                const errorMessage = error.response?.data?.message || "An error occurred while logging in.";
+                const errorMessage = error.response?.data?.message || "An error occurred while signing up.";
                 setSnackBarMessage(errorMessage);
+                setSnackBarSeverity("error")
                 setShowSnackbar(true);
                 console.log(error)
             }
@@ -45,6 +48,7 @@ const AuthRegister = ({ title, subtitle, subtext }) => {
 
     return(
     <>
+    <div>
         {title ? (
             <Typography fontWeight="700" variant="h2" mb={1}>
                 {title}
@@ -52,7 +56,6 @@ const AuthRegister = ({ title, subtitle, subtext }) => {
         ) : null}
 
         {subtext}
-
         <Box>
             <Stack mb={3}>
                 <Typography variant="subtitle1"
@@ -72,15 +75,9 @@ const AuthRegister = ({ title, subtitle, subtext }) => {
             </Button>
         </Box>
         {subtitle}
-        <Snackbar
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            open={showSnackbar}
-            autoHideDuration={3000}
-            onClose={handleSnackbarClose}
-            message={snackBarMessage}
-        />
+        </div>
+        <SnackbarComponent open={showSnackbar} handleClose={handleSnackbarClose} severity={snackBarSeverity} message={snackBarMessage} />
     </>
-    )
-};
+)};
 
 export default AuthRegister;

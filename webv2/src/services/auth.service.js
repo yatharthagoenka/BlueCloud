@@ -41,10 +41,10 @@ class AuthService {
     return JSON.parse(localStorage.getItem('user'));;
   }
 
-  updateCurrentUser(username) {
+  updateCurrentUser(field, value) {
     const currentUser = JSON.parse(localStorage.getItem('user'));
     if (currentUser) {
-      currentUser.user.username = username;
+      currentUser.user[field] = value;
       localStorage.setItem('user', JSON.stringify(currentUser));
     }
   }

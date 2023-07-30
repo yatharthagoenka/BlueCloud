@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import CustomTextField from '../../../components/shared/CustomTextField';
 import { Box,Typography,Button,Stack } from '@mui/material';
 import AuthService from 'src/services/auth.service';
-import Snackbar from '@mui/material/Snackbar';
+import SnackbarComponent from 'src/components/shared/Snackbar';
 
 const AuthLogin = ({ title, subtitle, subtext }) => {
     const navigate = useNavigate();
@@ -13,6 +13,7 @@ const AuthLogin = ({ title, subtitle, subtext }) => {
     })
     const [showSnackbar, setShowSnackbar] = useState(false);
     const [snackBarMessage, setSnackBarMessage] = useState("");
+    const [snackBarSeverity, setSnackBarSeverity] = useState("info");
 
     const handleSnackbarClose = (event, reason) => {
         setShowSnackbar(false);
@@ -31,11 +32,13 @@ const AuthLogin = ({ title, subtitle, subtext }) => {
         AuthService.login(state.username, state.password).then(
             response => {
                 navigate("/user/dashboard");
+                setSnackBarSeverity("success")
                 window.location.reload();
             },
             error => {
                 const errorMessage = error.response?.data?.message || "An error occurred while logging in.";
                 setSnackBarMessage(errorMessage);
+                setSnackBarSeverity("error")
                 setShowSnackbar(true);
                 console.log(error)
             }
@@ -79,13 +82,7 @@ const AuthLogin = ({ title, subtitle, subtext }) => {
         </Box>
         {subtitle}
     </div>
-    <Snackbar
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        open={showSnackbar}
-        autoHideDuration={3000}
-        onClose={handleSnackbarClose}
-        message={snackBarMessage}
-    />
+    <SnackbarComponent open={showSnackbar} handleClose={handleSnackbarClose} severity={snackBarSeverity} message={snackBarMessage} />
     </>
 )};
 

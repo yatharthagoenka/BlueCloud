@@ -66,13 +66,13 @@ const Profile = () => {
           },
         }}
       >
-        <MenuItem>
+        <MenuItem to="/user/profile" component={Link}>
           <ListItemIcon>
             <IconUser width={20} />
           </ListItemIcon>
           <ListItemText>My Account</ListItemText>
         </MenuItem>
-        <MenuItem>
+        <MenuItem to="/user/files" component={Link}>
           <ListItemIcon>
             <IconMail width={20} />
           </ListItemIcon>

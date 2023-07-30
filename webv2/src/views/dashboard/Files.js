@@ -6,7 +6,7 @@ import AuthService from '../../services/auth.service'
 import {Typography,Table,TableBody,TableCell,TableHead,TableRow,Chip,Button,Grid} from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { LoadingButton } from '@mui/lab';
-import Snackbar from '@mui/material/Snackbar';
+import SnackbarComponent from 'src/components/shared/Snackbar';
 
 const Files = () => {
     const [files , setFiles] = useState([])
@@ -14,6 +14,8 @@ const Files = () => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [uploadFlag, setUploadFlag] = useState(false);
     const [showSnackbar, setShowSnackbar] = useState(false);
+    const [snackBarMessage, setSnackBarMessage] = useState("");
+    const [snackBarSeverity, setSnackBarSeverity] = useState("info");
     let currentUser;
 
     useEffect(() => {
@@ -33,6 +35,8 @@ const Files = () => {
                     setFiles(response.data.files);
                 },
                 error => {
+                    setSnackBarMessage(error);
+                    setSnackBarSeverity("error")
                     console.log(error)
                 }
             );
@@ -79,17 +83,28 @@ const Files = () => {
             data.append('file', selectedFile)
             AppService.uploadFile(data, user._id, JSON.parse(localStorage.getItem("user")).token).then(
                 response => {
+                    console.log(response)
                     const updatedFiles = [...files, response.data];
+                    
+                    setSnackBarMessage('Uploaded file successfully.');
+                    setSnackBarSeverity("success")
+                    setShowSnackbar(true)
+
                     setFiles(updatedFiles);
                     setUploadFlag(false);
                     setSelectedFile(null);
                 },
                 error => {
+                    setSnackBarMessage('Error uploading file.');
+                    setSnackBarSeverity("error")
+                    setShowSnackbar(true)
                     console.log(error)
                 }
                 );
         }else{
-            setShowSnackbar(true);
+            setSnackBarMessage('No file selected.');
+            setSnackBarSeverity("warning")
+            setShowSnackbar(true)
             setUploadFlag(false);
         }
     };
@@ -199,12 +214,11 @@ const Files = () => {
                 </TableBody>
             </Table>
         </DashboardCard>
-        <Snackbar
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        <SnackbarComponent
             open={showSnackbar}
-            autoHideDuration={3000}
-            onClose={handleSnackbarClose}
-            message="No file selected."
+            handleClose={handleSnackbarClose}
+            severity={snackBarSeverity}
+            message={snackBarMessage}
         />
         </PageContainer>
     );

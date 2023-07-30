@@ -11,12 +11,14 @@ const Profile = () => {
   const [state , setState] = useState({
     username : "",
     email: "",
+    password: "",
   })
 
   useEffect(()=>{
     setState({
       username: user.username,
-      email: user.email
+      email: user.email,
+      password: user.password
     })
   }, [])
 
