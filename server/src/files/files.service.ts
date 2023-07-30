@@ -57,7 +57,7 @@ export class FilesService {
     
     async encryptFile(savedFile) {
         try {
-            const response = await axios.post('http://flask-service:5000/encrypt', {
+            const response = await axios.post(`${process.env.FLASK_MICROSERVICE_API_URL}/encrypt`, {
                 uuid: savedFile.uuid,
             });
             console.log(response.data.pub_key);
@@ -70,7 +70,7 @@ export class FilesService {
 
     async decryptFile(uuid: string, pub_key: string) : Promise<string> {
         try {
-            const response = await axios.post('http://flask-service:5000/decrypt', {
+            const response = await axios.post(`${process.env.FLASK_MICROSERVICE_API_URL}/decrypt`, {
                 uuid: uuid,
                 pub_key: pub_key
             });
