@@ -1,9 +1,14 @@
 import os
 import json
+import base64
 from cryptography.fernet import Fernet, MultiFernet
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.ciphers.aead import (AESCCM, AESGCM, ChaCha20Poly1305)
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import padding
+
 
 return_json = {}
 
@@ -35,14 +40,32 @@ def rsaKeyPairGeneration():
     private_key = rsa.generate_private_key(
         public_exponent=65537, key_size=2048, backend=default_backend())
     public_key = private_key.public_key()
-    return {"private": private_key, "public": public_key}
+    return private_key, public_key
 
 
-def RSAAlgo(data: bytes, my_private_key, your_public_key):
-    encryptedKeys = my_private_key.encrypt(data)
-    encryptedKeys = your_public_key.encrypt(encryptedKeys)
-    # All keys stored in store_in_me.enc encrypted with my_private_key as well as your_public_key
-    writeEncryptedKeys(encryptedKeys)
+def RSAAlgo(uuid: str, bundle_key: bytes):
+    private_key, public_key = rsaKeyPairGeneration()
+    enc_bundle_key = public_key.encrypt(
+        bundle_key,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    )
+    priv_key_pem = private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.BestAvailableEncryption(b'privatekeysecret')
+    )
+    pub_key_pem = public_key.public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo
+    )
+    with open(os.path.join(os.path.dirname(__file__), 'store/files', uuid, os.path.basename("enc_aes_bundle_key.pem")), "wb") as file:
+        file.write(enc_bundle_key)
+    private_key_base64 = base64.b64encode(priv_key_pem).decode("utf-8")
+    return private_key_base64
 
 
 # AES in CBC mode with a 128-bit key for encryption; using PKCS7 padding.
@@ -113,8 +136,7 @@ def encrypter(uuid):
     
     # Encrypting all the keys with algo1 using key_1
     AESAlgo(uuid, secret_information, key_1)
-    # public_key = open(os.path.join('store/files', uuid, os.path.basename("public_key.pem")), "wb")
-    # public_key.write(key_1)
-    # public_key.close()
-    return_json['pub_key'] = key_1.decode("utf-8")
+    private_key = RSAAlgo(uuid, key_1)
+    # return_json['pub_key'] = key_1.decode("utf-8")
+    return_json['rsa_priv_base64'] = private_key
     return json.dumps(return_json)

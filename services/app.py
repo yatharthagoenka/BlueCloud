@@ -41,10 +41,10 @@ def encrypt_file():
 @app.route('/decrypt', methods=['POST'])
 def decrypt_file():
     uuid = request.json['uuid']
-    pub_key = request.json['pub_key']
+    rsa_priv_base64 = request.json['rsa_priv_base64']
     store_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'store'))
     os.makedirs(os.path.join(store_dir, 'files', uuid, 'dec'), exist_ok=True)
-    dec.decrypter(uuid, pub_key)
+    dec.decrypter(uuid, rsa_priv_base64)
     address = os.path.join(store_dir, 'uploads', os.path.basename(uuid))
     gems = sorted(os.listdir(os.path.join(store_dir, 'files', uuid, 'dec')))
     with open(address, 'w+b') as writer:

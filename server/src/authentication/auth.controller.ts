@@ -22,7 +22,7 @@ export class AuthController {
         return res.status(HttpStatus.OK).json({ user, token });
       }
       catch(error: any){
-        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Invalid request. Try again.' });
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: error});
       }
     }
     
@@ -36,7 +36,7 @@ export class AuthController {
         const token = await this.authService.signPayload(payload);
         return res.status(HttpStatus.OK).json({ user, token });
       }catch (error: any) {
-        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Invalid request. Try again.' });
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: error});
       }
     }
 }

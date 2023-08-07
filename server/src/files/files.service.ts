@@ -60,10 +60,10 @@ export class FilesService {
             const response = await axios.post(`${process.env.FLASK_MICROSERVICE_API_URL}/encrypt`, {
                 uuid: savedFile.uuid,
             });
-            console.log(response.data.pub_key);
-            return response.data.pub_key;
+            // console.log(response.data.rsa_priv_base64);
+            return response.data.rsa_priv_base64;
         } catch (error) {
-            this.loggerService.error(`ecvryptFile : ${error}`);
+            this.loggerService.error(`encryptFile : ${error}`);
             return JSON.stringify({ error: `Flask: ${error}` });
         }
     }
@@ -99,7 +99,7 @@ export class FilesService {
         try{
             savedFile = await this.saveFile(file);
             var fileSize = (fs.statSync(path.join(__dirname, '..', '..', 'store', 'uploads', `${savedFile.uuid}`)).size)/1000;
-            var pub_key = await this.encryptFile(savedFile);
+            var rsa_priv_base64 = await this.encryptFile(savedFile);
             this.loggerService.info(`createFile: File ${savedFile.uuid} saved to server`);
         }catch(error){
             this.loggerService.error(`createFile: ${error}`);
@@ -112,7 +112,7 @@ export class FilesService {
             const createFileDTO : IFile = {
                 originalname: `${savedFile.originalname}${savedFile.extension}`,
                 uuid: `${savedFile.uuid}`,
-                pub_key: `${pub_key}`,
+                rsa_priv_base64: `${rsa_priv_base64}`,
                 size: fileSize,
                 ownerID: userID,
                 gems: [{
@@ -152,7 +152,7 @@ export class FilesService {
             return path.join(__dirname, '..', '..', 'store', 'uploads', `${file.uuid}`);
         }
         try{
-            return this.decryptFile(file.uuid, file.pub_key);
+            return this.decryptFile(file.uuid, file.rsa_priv_base64);
         }catch(err){
             this.loggerService.error(`downloadFile: ${err}`);
         }

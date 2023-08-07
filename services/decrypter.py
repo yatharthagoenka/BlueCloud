@@ -1,6 +1,10 @@
 import os
+import base64
 from cryptography.fernet import Fernet, MultiFernet
 from cryptography.hazmat.primitives.ciphers.aead import (AESCCM, AESGCM, ChaCha20Poly1305)
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization, hashes
+from cryptography.hazmat.primitives.asymmetric import padding
 
 store_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'store'))
 
@@ -59,7 +63,21 @@ def AESCCMAlgo(uuid, gem, key, nonce):
     plainText = aesccm.decrypt(nonce, encryptedText, aad)
     writePlainText(uuid, gem, plainText)
 
-def decrypter(uuid, pub_key):
+def decrypter(uuid, priv_key_base64):
+    private_key_pem = base64.b64decode(priv_key_base64)
+    rsa_priv_key = serialization.load_pem_private_key(
+        private_key_pem, password=b'privatekeysecret', backend=default_backend()
+    )
+    with open(os.path.join('store/files', uuid, os.path.basename("enc_aes_bundle_key.pem")), "rb") as file:
+        enc_bundle_key = file.read()
+    pub_key = rsa_priv_key.decrypt(
+        enc_bundle_key,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    )
     secret_information = AESAlgo(uuid, pub_key)
     list_information = secret_information.split(b':::::')
     key_1_1 = list_information[0]

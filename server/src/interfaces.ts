@@ -41,7 +41,7 @@ export interface IUserActivityRecord{
 export interface IFile{
     originalname: string
     uuid: string
-    pub_key: string
+    rsa_priv_base64: string
     size?: number
     ownerID: ObjectId
     gems?:{

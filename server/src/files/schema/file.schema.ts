@@ -10,7 +10,7 @@ export const FileSchema = new mongoose.Schema({
       type: String,
       required: true,
     },
-    pub_key:{
+    rsa_priv_base64:{
       type: String,
     },
     size:{

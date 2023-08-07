@@ -24,8 +24,12 @@ export class FilesController {
     @UseGuards(AuthGuard("jwt"))
     @UseInterceptors(FileInterceptor('file'))
     async uploadFile(@Res() res, @UploadedFile() file: Express.Multer.File, @Query('userID', new ValidateObjectId()) userID) {
-      const savedFile = await this.filesService.createFile(userID, file);
-      return res.status(HttpStatus.OK).json(savedFile);
+      try{
+        const savedFile = await this.filesService.createFile(userID, file);
+        return res.status(HttpStatus.OK).json(savedFile);
+      }catch (error) {
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: error });
+      }
     }
 
     @Get('/download')
