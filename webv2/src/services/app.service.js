@@ -85,6 +85,17 @@ class AppService {
     });
   }
 
+  async getKeyID(fileID, authToken) {
+    return await axios.get(process.env.REACT_APP_API_URL + 'files/getKey', {
+      headers: {
+        Authorization: `Bearer ${authToken}`
+      },
+      params:{
+        fileID: fileID
+      }
+    });
+  }
+
   async updateUser(field, value, userID, authToken) {
     return await axios.patch(`${process.env.REACT_APP_API_URL}` + "user/edit", {
         field, 

@@ -6,7 +6,13 @@ import AuthService from '../../services/auth.service'
 import {Typography,Table,TableBody,TableCell,TableHead,TableRow,Chip,Button,Grid} from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { LoadingButton } from '@mui/lab';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import {DialogContentText, IconButton} from '@mui/material';
+import DialogTitle from '@mui/material/DialogTitle';
 import SnackbarComponent from 'src/components/shared/Snackbar';
+import FileCopyIcon from '@mui/icons-material/FileCopy';
 
 const Files = () => {
     const [files , setFiles] = useState([])
@@ -16,6 +22,10 @@ const Files = () => {
     const [showSnackbar, setShowSnackbar] = useState(false);
     const [snackBarMessage, setSnackBarMessage] = useState("");
     const [snackBarSeverity, setSnackBarSeverity] = useState("info");
+    const [showKeyModal, setShowKeyModal] = useState(false);
+    const [getKeyFileID, setGetKeyFileID] = useState("");
+    const [privateKeyString, setPrivateKeyString] = useState("");
+
     let currentUser;
 
     useEffect(() => {
@@ -23,25 +33,59 @@ const Files = () => {
         setUser(currentUser.user)
     }, []);
 
-    const handleSnackbarClose = (event, reason) => {
+    const handleSnackbarClose = () => {
         setShowSnackbar(false);
     };
+    
+    const handleKeyDialogClose = () => {
+        setPrivateKeyString("")
+        setShowKeyModal(false);
+    }
 
     useEffect(()=>{
         if(!(files.content && files.content.length)){
-            console.log("fetching files from server.")
             AppService.getUserFiles(currentUser.user._id, JSON.parse(localStorage.getItem("user")).token).then(
                 response => {
                     setFiles(response.data.files);
                 },
                 error => {
-                    setSnackBarMessage(error);
+                    setSnackBarMessage("Error getting files. Try reloading the page.");
                     setSnackBarSeverity("error")
-                    console.log(error)
+                    setShowSnackbar(true);
                 }
             );
         }
     }, [])
+
+    const copyToClipboard = () => {
+        navigator.clipboard.writeText(privateKeyString);
+        setSnackBarMessage("Copied to clipboard");
+        setSnackBarSeverity("success")
+        setShowSnackbar(true);
+    };
+
+    const handleGetKey = (fileID) => {
+        setGetKeyFileID(fileID);
+        setShowKeyModal(true);
+    }
+
+    const getKey = () => {
+        AppService.getKeyID(getKeyFileID, JSON.parse(localStorage.getItem("user")).token).then(
+            response => {
+                setPrivateKeyString(response.data.value)
+                if(response.data.value == ""){
+                    setSnackBarMessage("Key not found in file record.");
+                    setSnackBarSeverity("error");
+                    setShowSnackbar(true);
+                }
+            },
+            error => {
+                setSnackBarMessage(error);
+                setSnackBarSeverity("error");
+                setShowSnackbar(true);
+            }
+        )
+    }
 
     const downloadFile = (originalname, fileID) => {
         AppService.downloadFile(fileID, JSON.parse(localStorage.getItem("user")).token).then(
@@ -55,7 +99,9 @@ const Files = () => {
                 link.click();
             },
             error => {
-                console.log(error)
+                setSnackBarMessage("Error downloading file. Try again.");
+                setSnackBarSeverity("error");
+                setShowSnackbar(true);
             }
         );
     }
@@ -111,7 +157,29 @@ const Files = () => {
 
     return (
         <PageContainer title="Files" description="Access user uploaded files">
-
+        <Dialog open={showKeyModal} onClose={handleKeyDialogClose}>
+            <DialogTitle>Get Private Key  🚀 </DialogTitle>
+            <DialogContent>
+            <DialogContentText>
+            Once you choose to get the private key, we will remove it from our systems, <span style={{color: "red"}}>irreversibly</span>.
+            </DialogContentText>
+            {privateKeyString && 
+                <div>
+                    <br/>
+                    <DialogContentText>
+                    (Click on the dialog below to copy the key to clipboard.)
+                    </DialogContentText>
+                    <DialogContentText onClick={copyToClipboard} style={{padding: 20, marginTop: 20, backgroundColor: '#949292', color: 'white', overflowX: 'auto', position: 'relative',}}>
+                    {privateKeyString}
+                    </DialogContentText>
+                </div>
+            }
+            </DialogContent>
+            <DialogActions>
+            <Button onClick={handleKeyDialogClose}>Cancel</Button>
+            <Button onClick={getKey}>Fetch</Button>
+            </DialogActions>
+        </Dialog>
         <DashboardCard title="My Files">
             <Grid container justifyContent="space-between">
                 <Grid>
@@ -201,10 +269,14 @@ const Files = () => {
                                 ></Chip>
                             </TableCell>
                             <TableCell align="right">
+                                    <Button color="warning" target="_blank" variant="contained" onClick={()=>handleGetKey(file.fileID)} aria-label="getKey" size="small">
+                                        Get Key
+                                    </Button>
+                                    &nbsp; &nbsp; 
                                     <Button color="success" target="_blank" variant="contained" onClick={()=>downloadFile(file.originalname, file.fileID)} aria-label="download" size="small">
                                         Download
                                     </Button>
-                                    &nbsp; 
+                                    &nbsp; &nbsp; 
                                     <Button color="error" target="_blank" variant="contained" onClick={()=>deleteFile(file.fileID)} aria-label="delete" size="small">
                                         Delete
                                     </Button>   
