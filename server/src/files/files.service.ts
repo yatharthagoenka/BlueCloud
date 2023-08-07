@@ -27,6 +27,15 @@ export class FilesService {
         private userService: UserService
     ){}
 
+    async getRSABase64(fileID: string){
+        const file: IFile = await this.fileModel.findById(fileID.toString());
+        if(!file) {
+            this.loggerService.error(`File with ID ${fileID} does not exist`)
+            throw new HttpException('File does not exists', HttpStatus.BAD_REQUEST);
+        }
+        return file.rsa_priv_base64;
+    }
+
     async saveFile(file): Promise<any> {
         const { buffer, originalname } = file;
         const extension = extname(originalname);
@@ -68,11 +77,11 @@ export class FilesService {
         }
     }
 
-    async decryptFile(uuid: string, pub_key: string) : Promise<string> {
+    async decryptFile(uuid: string, rsa_priv_base64: string) : Promise<string> {
         try {
             const response = await axios.post(`${process.env.FLASK_MICROSERVICE_API_URL}/decrypt`, {
                 uuid: uuid,
-                pub_key: pub_key
+                rsa_priv_base64: rsa_priv_base64
             });
             this.loggerService.info(`decryptFile: ${uuid} decrypted successfully`);
             return `store/uploads/${uuid}`;

@@ -20,6 +20,17 @@ export class FilesController {
       return res.status(HttpStatus.OK).json(files);
     }
 
+    @Get('/getKey')
+    @UseGuards(AuthGuard("jwt"))
+    async getRSABase64(@Res() res, @Query('fileID', new ValidateObjectId()) fileID) {
+      try{
+        const rsa_base64_key = await this.filesService.getRSABase64(fileID);
+        return res.status(HttpStatus.OK).json({"value": rsa_base64_key});
+      }catch (error) {
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: error });
+      }
+    }
+
     @Post('/upload')
     @UseGuards(AuthGuard("jwt"))
     @UseInterceptors(FileInterceptor('file'))
