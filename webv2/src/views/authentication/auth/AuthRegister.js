@@ -8,6 +8,8 @@ import SnackbarComponent from 'src/components/shared/Snackbar';
 
 const AuthRegister = ({ title, subtitle, subtext }) => {
     const navigate = useNavigate();
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/
     const [state , setState] = useState({
         username : "",
         email: "",
@@ -30,6 +32,24 @@ const AuthRegister = ({ title, subtitle, subtext }) => {
     }
     function handleRegister(e) {
         e.preventDefault();
+        if(state.username==""){
+            setSnackBarMessage("Please enter a valid username.");
+            setSnackBarSeverity("error")
+            setShowSnackbar(true);
+            return;
+        }
+        if(!emailRegex.test(state.email)){
+            setSnackBarMessage("Please enter a valid email address.");
+            setSnackBarSeverity("error")
+            setShowSnackbar(true);
+            return;
+        }
+        if(!passwordRegex.test(state.password)){
+            setSnackBarMessage("Password must contain minimum eight characters, at least one uppercase letter, one lowercase letter and one number");
+            setSnackBarSeverity("error")
+            setShowSnackbar(true);
+            return;
+        }
         authService.register(state).then(
             () => {
                 navigate("/user/dashboard");
@@ -64,11 +84,11 @@ const AuthRegister = ({ title, subtitle, subtext }) => {
 
                 <Typography variant="subtitle1"
                     fontWeight={600} component="label" htmlFor='email' mb="5px" mt="25px">Email Address</Typography>
-                <CustomTextField id="email" variant="outlined" fullWidth onChange={handleChange}/>
+                <CustomTextField id="email" type={"email"} variant="outlined" fullWidth onChange={handleChange}/>
 
                 <Typography variant="subtitle1"
                     fontWeight={600} component="label" htmlFor='password' mb="5px" mt="25px">Password</Typography>
-                <CustomTextField id="password" variant="outlined" fullWidth onChange={handleChange}/>
+                <CustomTextField id="password" type="password" variant="outlined" fullWidth onChange={handleChange}/>
             </Stack>
             <Button color="primary" variant="contained" size="large" fullWidth onClick={handleRegister}>
                 Sign Up
