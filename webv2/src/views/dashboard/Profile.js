@@ -10,6 +10,7 @@ const Profile = () => {
   const user = authService.getCurrentUser().user;
   const [state , setState] = useState({
     username : "",
+    name: "",
     email: "",
     password: "",
   })
@@ -17,6 +18,7 @@ const Profile = () => {
   useEffect(()=>{
     setState({
       username: user.username,
+      name: user.name,
       email: user.email,
       password: user.password
     })
@@ -29,8 +31,12 @@ const Profile = () => {
         <Box>
             <Stack mb={3}>
                 <Typography variant="subtitle1"
-                    fontWeight={600} component="label" htmlFor='name' mb="5px">Username</Typography>
+                    fontWeight={600} component="label" htmlFor='username' mb="5px">Username</Typography>
                 <CustomTextFieldWithButton id="username" placeholder={user.username} variant="outlined" fullWidth value={state.username} />
+                
+                <Typography variant="subtitle1"
+                    fontWeight={600} component="label" htmlFor='name' mb="5px" mt="25px">Name</Typography>
+                <CustomTextFieldWithButton id="name" placeholder={user.name} variant="outlined" fullWidth value={state.name} />
 
                 <Typography variant="subtitle1"
                     fontWeight={600} component="label" htmlFor='email' mb="5px" mt="25px">Email Address</Typography>

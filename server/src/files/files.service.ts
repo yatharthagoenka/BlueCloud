@@ -9,15 +9,10 @@ import { extname } from 'path';
 import { UserService } from 'src/user/user.service';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as util from 'util';
-import * as child_process from 'child_process';
 import { promisify } from 'util';
 import axios from 'axios';
 
-const exec = util.promisify(child_process.exec);
-const execPromise = promisify(exec);
 const deleteFolderUtil = promisify(fs.rm);
-const pythonScriptPath = 'src/files/scripts/entrypoint.py';
 
 @Injectable()
 export class FilesService {
@@ -27,13 +22,16 @@ export class FilesService {
         private userService: UserService
     ){}
 
-    async getRSABase64(fileID: string){
-        const file: IFile = await this.fileModel.findById(fileID.toString());
+    async getRSABase64(userID: ObjectId, fileID: ObjectId){
+        const file = await this.fileModel.findById(fileID.toString());
         if(!file) {
             this.loggerService.error(`File with ID ${fileID} does not exist`)
             throw new HttpException('File does not exists', HttpStatus.BAD_REQUEST);
         }
-        return file.rsa_priv_base64;
+        const rsa_priv_base64 = file.rsa_priv_base64;
+        await this.fileModel.findByIdAndUpdate(file._id, {'rsa_priv_base64': ''});
+        await this.userService.revokeFileAccess(userID, fileID);
+        return rsa_priv_base64;
     }
 
     async saveFile(file): Promise<any> {
@@ -79,7 +77,7 @@ export class FilesService {
 
     async decryptFile(uuid: string, rsa_priv_base64: string) : Promise<string> {
         try {
-            const response = await axios.post(`${process.env.FLASK_MICROSERVICE_API_URL}/decrypt`, {
+            await axios.post(`${process.env.FLASK_MICROSERVICE_API_URL}/decrypt`, {
                 uuid: uuid,
                 rsa_priv_base64: rsa_priv_base64
             });
@@ -99,7 +97,6 @@ export class FilesService {
         const user = await this.userService.findById(userID.toString());
         let savedFile;
         let resultCreateFile;
-        let gems;
         if(!user) {
             this.loggerService.error(`createFile: User with ID ${userID} does not exist`)
             throw new HttpException('User does not exists', HttpStatus.BAD_REQUEST);
@@ -124,10 +121,10 @@ export class FilesService {
                 rsa_priv_base64: `${rsa_priv_base64}`,
                 size: fileSize,
                 ownerID: userID,
-                gems: [{
-                    index: 0,
-                    enc: "none"
-                }]
+                // gems: [{
+                //     index: 0,
+                //     enc: "none"
+                // }]
             }
             // save to filesModel
             const createdFile = new this.fileModel(createFileDTO);
@@ -136,6 +133,7 @@ export class FilesService {
             var userFileRecord : IUserFileRecord = {
                 originalname: savedFile.originalname,
                 fileID: resultCreateFile._id,
+                access: 1,
                 size: fileSize,
                 role: [IRole.OWNER, IRole.EDITOR, IRole.VIEWER]
             }
@@ -150,7 +148,7 @@ export class FilesService {
         return userFileRecord;
     }
 
-    async downloadFile(fileID: ObjectId): Promise<string> {
+    async downloadFile(fileID: ObjectId, user_priv_base64: string): Promise<string> {
         const file = await this.fileModel.findById(fileID.toString());
         if(!file) {
             this.loggerService.error(`File with ID ${fileID} does not exist`)
@@ -161,7 +159,8 @@ export class FilesService {
             return path.join(__dirname, '..', '..', 'store', 'uploads', `${file.uuid}`);
         }
         try{
-            return this.decryptFile(file.uuid, file.rsa_priv_base64);
+            if(file.rsa_priv_base64 == "") return this.decryptFile(file.uuid, user_priv_base64);
+            else return this.decryptFile(file.uuid, file.rsa_priv_base64);
         }catch(err){
             this.loggerService.error(`downloadFile: ${err}`);
         }

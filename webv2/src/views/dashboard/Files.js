@@ -9,10 +9,9 @@ import { LoadingButton } from '@mui/lab';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import {DialogContentText, IconButton} from '@mui/material';
+import {DialogContentText, TextField} from '@mui/material';
 import DialogTitle from '@mui/material/DialogTitle';
 import SnackbarComponent from 'src/components/shared/Snackbar';
-import FileCopyIcon from '@mui/icons-material/FileCopy';
 
 const Files = () => {
     const [files , setFiles] = useState([])
@@ -23,7 +22,9 @@ const Files = () => {
     const [snackBarMessage, setSnackBarMessage] = useState("");
     const [snackBarSeverity, setSnackBarSeverity] = useState("info");
     const [showKeyModal, setShowKeyModal] = useState(false);
+    const [showDownloadWithKeyModal, setShowDownloadWithKeyModal] = useState(false);
     const [getKeyFileID, setGetKeyFileID] = useState("");
+    const [downloadWithKeyFilename, setDownloadWithKeyFilename] = useState("");
     const [privateKeyString, setPrivateKeyString] = useState("");
 
     let currentUser;
@@ -38,8 +39,9 @@ const Files = () => {
     };
     
     const handleKeyDialogClose = () => {
-        setPrivateKeyString("")
+        setPrivateKeyString("");
         setShowKeyModal(false);
+        setShowDownloadWithKeyModal(false);
     }
 
     useEffect(()=>{
@@ -47,6 +49,7 @@ const Files = () => {
             AppService.getUserFiles(currentUser.user._id, JSON.parse(localStorage.getItem("user")).token).then(
                 response => {
                     setFiles(response.data.files);
+                    console.log(response.data.files)
                 },
                 error => {
                     setSnackBarMessage("Error getting files. Try reloading the page.");
@@ -70,7 +73,8 @@ const Files = () => {
     }
 
     const getKey = () => {
-        AppService.getKeyID(getKeyFileID, JSON.parse(localStorage.getItem("user")).token).then(
+        // const currFile = files.find(file => file.fileID === getKeyFileID);
+        AppService.getKeyID(user._id, getKeyFileID, JSON.parse(localStorage.getItem("user")).token).then(
             response => {
                 setPrivateKeyString(response.data.value)
                 if(response.data.value == ""){
@@ -78,32 +82,47 @@ const Files = () => {
                     setSnackBarSeverity("error");
                     setShowSnackbar(true);
                 }
+                const updatedFiles = files.map(file => {
+                    if (file.fileID === getKeyFileID) {
+                      return { ...file, access: 0 };
+                    }
+                    return file;
+                });
+                setFiles(updatedFiles);
+                setGetKeyFileID("");
             },
             error => {
                 setSnackBarMessage(error);
                 setSnackBarSeverity("error");
                 setShowSnackbar(true);
+                setGetKeyFileID("");
             }
         )
     }
 
-    const downloadFile = (originalname, fileID) => {
-        AppService.downloadFile(fileID, JSON.parse(localStorage.getItem("user")).token).then(
-            response => {
-                console.log(response)
-                const url = window.URL.createObjectURL(new Blob([response.data]));
-                const link = document.createElement('a');
-                link.href = url;
-                link.setAttribute('download', originalname);
-                document.body.appendChild(link);
-                link.click();
-            },
-            error => {
-                setSnackBarMessage("Error downloading file. Try again.");
-                setSnackBarSeverity("error");
-                setShowSnackbar(true);
-            }
-        );
+    const downloadFile = (originalname, fileID, access) => {
+        if(!access){
+            setDownloadWithKeyFilename(originalname);
+            setGetKeyFileID(fileID);
+            setShowDownloadWithKeyModal(true);
+        }else{
+            AppService.downloadFile(fileID, privateKeyString, JSON.parse(localStorage.getItem("user")).token).then(
+                response => {
+                    console.log(response)
+                    const url = window.URL.createObjectURL(new Blob([response.data]));
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute('download', originalname);
+                    document.body.appendChild(link);
+                    link.click();
+                },
+                error => {
+                    setSnackBarMessage("Error downloading file. Try again.");
+                    setSnackBarSeverity("error");
+                    setShowSnackbar(true);
+                }
+            );
+        }
     }
 
     const deleteFile = (fileID) => {
@@ -121,6 +140,10 @@ const Files = () => {
     const handleFileSelect = (e) => {
         setSelectedFile(e.target.files[0]);
     };
+
+    const handlePrivateKeyFieldChange = (e) => {
+        setPrivateKeyString(e.target.value);
+    }
 
     const handleUpload = (e) => {
         setUploadFlag(true);
@@ -178,6 +201,29 @@ const Files = () => {
             <DialogActions>
             <Button onClick={handleKeyDialogClose}>Cancel</Button>
             <Button onClick={getKey}>Fetch</Button>
+            </DialogActions>
+        </Dialog>
+        <Dialog open={showDownloadWithKeyModal} onClose={handleKeyDialogClose}>
+            <DialogTitle>Download with Private key 🔒</DialogTitle>
+            <DialogContent>
+            <DialogContentText>
+                BlueCloud access for this file has been revoked. Please enter the private key to decrypt and download the file.
+            </DialogContentText>
+            <br/>
+            <TextField
+                autoFocus
+                margin="dense"
+                id="name"
+                onChange={handlePrivateKeyFieldChange}
+                label="Private Key"
+                type="text"
+                fullWidth
+                variant="standard"
+            />
+            </DialogContent>
+            <DialogActions>
+            <Button onClick={handleKeyDialogClose}>Cancel</Button>
+            <Button onClick={()=>{downloadFile(downloadWithKeyFilename, getKeyFileID, privateKeyString, 1)}}>Download</Button>
             </DialogActions>
         </Dialog>
         <DashboardCard title="My Files">
@@ -269,11 +315,11 @@ const Files = () => {
                                 ></Chip>
                             </TableCell>
                             <TableCell align="right">
-                                    <Button color="warning" target="_blank" variant="contained" onClick={()=>handleGetKey(file.fileID)} aria-label="getKey" size="small">
+                                    <Button color="info" target="_blank" variant="contained" onClick={()=>handleGetKey(file.fileID)} aria-label="getKey" size="small">
                                         Get Key
                                     </Button>
                                     &nbsp; &nbsp; 
-                                    <Button color="success" target="_blank" variant="contained" onClick={()=>downloadFile(file.originalname, file.fileID)} aria-label="download" size="small">
+                                    <Button color={ file.access? "success": "warning"} target="_blank" variant="contained" onClick={()=>downloadFile(file.originalname, file.fileID, file.access)} aria-label="download" size="small">
                                         Download
                                     </Button>
                                     &nbsp; &nbsp; 

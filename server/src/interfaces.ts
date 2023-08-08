@@ -29,6 +29,7 @@ export enum IActivityAction{
 export interface IUserFileRecord{
     originalname: string
     fileID: ObjectId
+    access: number
     size?: number
     role: IRole[]
 }

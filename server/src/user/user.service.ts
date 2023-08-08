@@ -107,6 +107,18 @@ export class UserService {
     );
   }
 
+  async revokeFileAccess(userID: ObjectId, fileID: ObjectId){
+    await this.userModel.updateOne(
+      {
+        _id: userID,
+        'files.fileID': fileID
+      },
+      {
+        $set: { 'files.$.access': 0 }
+      }
+    )
+  }
+
   async deleteUsersFile(userID: ObjectId, fileID: ObjectId, size: number){
     await this.userModel.updateMany(
       { files: { $elemMatch: { fileID: fileID } } },

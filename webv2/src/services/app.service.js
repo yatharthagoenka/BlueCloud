@@ -61,13 +61,14 @@ class AppService {
     });
   }
   
-  async downloadFile(fileID, authToken) {
+  async downloadFile(fileID, user_priv_base64, authToken) {
     return await axios.get(process.env.REACT_APP_API_URL + 'files/download', {
       headers: {
         Authorization: `Bearer ${authToken}`
       },
       params:{
-        fileID: fileID
+        fileID: fileID,
+        user_priv_base64: user_priv_base64,
       },
       responseType: 'blob'
     });
@@ -85,12 +86,13 @@ class AppService {
     });
   }
 
-  async getKeyID(fileID, authToken) {
+  async getKeyID(userID, fileID, authToken) {
     return await axios.get(process.env.REACT_APP_API_URL + 'files/getKey', {
       headers: {
         Authorization: `Bearer ${authToken}`
       },
       params:{
+        userID: userID,
         fileID: fileID
       }
     });

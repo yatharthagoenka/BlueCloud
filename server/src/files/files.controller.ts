@@ -22,9 +22,9 @@ export class FilesController {
 
     @Get('/getKey')
     @UseGuards(AuthGuard("jwt"))
-    async getRSABase64(@Res() res, @Query('fileID', new ValidateObjectId()) fileID) {
+    async getRSABase64(@Res() res, @Query('userID', new ValidateObjectId()) userID, @Query('fileID', new ValidateObjectId()) fileID) {
       try{
-        const rsa_base64_key = await this.filesService.getRSABase64(fileID);
+        const rsa_base64_key = await this.filesService.getRSABase64(userID, fileID);
         return res.status(HttpStatus.OK).json({"value": rsa_base64_key});
       }catch (error) {
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: error });
@@ -45,9 +45,9 @@ export class FilesController {
 
     @Get('/download')
     @UseGuards(AuthGuard("jwt"))
-    async downloadFile(@Res() res, @Query('fileID', new ValidateObjectId()) fileID) {
+    async downloadFile(@Res() res, @Query('fileID', new ValidateObjectId()) fileID,  @Query('user_priv_base64') user_priv_base64) {
       try {
-        const file = await this.filesService.downloadFile(fileID);
+        const file = await this.filesService.downloadFile(fileID, user_priv_base64);
         return res.status(HttpStatus.OK).download(file)
       } catch (error) {
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: error });

@@ -12,6 +12,11 @@ export const userFileRecord = new mongoose.Schema({
         ref: 'Files',
         required: true,
     },
+    access:{
+        type: Number,
+        required: true,
+        default: 1,
+    },
     size:{
         type: Number
     },
@@ -36,6 +41,9 @@ export const UserSchema = new mongoose.Schema({
         type:String,
         unique:true,
         required:true,
+    },
+    name:{
+        type:String,
     },
     email:{
         type:String,

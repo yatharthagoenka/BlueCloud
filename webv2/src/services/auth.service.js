@@ -22,10 +22,12 @@ class AuthService {
 
   async register(user){
     const username = user.username;
+    const name = "";
     const password = user.password;
     const email = user.email;
     return await axios.post(process.env.REACT_APP_API_URL + "auth/register", {
       username,
+      name,
       email,
       password
     }).then(response => {
