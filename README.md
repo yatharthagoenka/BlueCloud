@@ -46,10 +46,12 @@ The application is built as using the microservices architecture, deployed over 
 
 ## Main features
 - Microservices architecture
-- Secure files storage
+- Secure files storage using Hybrid Cryptography
   - Divides the file into fixed-sized chunks (aka `gems`)
   - Uses symmetric cryptographic algorithms like `AES, ChaCha, AESGCM, AESCCM` to encrypt each chunk individually before storing in memory
-  - Encrypts the keys as an additional security method using AES
+  - Encrypts the keys as an additional security method using RSA
+  - The asymmetric key is either stored in the DB or given to the user.
+  - Should the user request the key, it is irreversibly deleted from the DB, giving the user sole access to the file.
 - File sharing (under progress)
   - Grant priviledges to users
   - Share without using up any extra memory
@@ -67,7 +69,7 @@ The application is built as using the microservices architecture, deployed over 
 - Grant user the right to define the level of security to be imposed on each file
   - Provide control of gem size
   - Allowing the user to choose which algorithms to use
-  - Option between a user-defined password or a symmetric key for encryption of the key string
+  - Option between a user-defined password or an asymmetric key for encryption of the key string
 
 
 ## Setting up the application:
