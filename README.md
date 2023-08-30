@@ -16,7 +16,7 @@ A cryptographic cloud-based file storage system.
 
 Check it out [here 🔗](http://3.26.196.196/)
 
-<img src="webv2\public\dashboard-ss.png" align="left" width="450" hspace="10" vspace="10">
+<img src="webv2\public\landing-page.png" align="left" width="450" hspace="10" vspace="10">
 
 BlueCloud is a cryptography-based cloud storage platform that allows users to upload, store, and share files securely. The application provides users with a simple and intuitive interface to manage their files. Users can upload files, view, download, and share files with others. The application also provides features such as user authentication and authorization and file permissions. With BlueCloud, users can access their files from anywhere and on any device, making it a convenient and reliable solution for managing files in the cloud. 
 
