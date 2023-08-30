@@ -1,41 +1,55 @@
 import React, { useEffect, useState } from 'react';
-import { Box } from '@mui/material';
-import PageContainer from 'src/components/container/PageContainer';
 import appService from 'src/services/app.service';
-import { Link } from 'react-router-dom';
-import { Hero } from './components/hero'
-import { HeroIllustration } from './components/hero-illustration'
-import { Layout } from './components/layout'
+import Header from './components/header';
+import useLandingScriptsLoader from './components/scriptLoader';
+import { Helmet } from 'react-helmet';
+
+import 'src/assets/landing/vendor/aos/aos.css';
+import 'src/assets/landing/vendor/bootstrap/css/bootstrap.min.css';
+import 'src/assets/landing/vendor/bootstrap-icons/bootstrap-icons.css';
+import 'src/assets/landing/vendor/glightbox/css/glightbox.min.css';
+import 'src/assets/landing/vendor/remixicon/remixicon.css';
+import 'src/assets/landing/vendor/swiper/swiper-bundle.min.css';
+import 'src/assets/landing/styles.css';
+
+import { Footer } from './components/footer';
+import { Hero } from './components/hero';
+import { About } from './components/about';
+import { Values } from './components/values';
+import { Metrics } from './components/metrics';
+import { Features } from './components/features';
+import { TechStack } from './components/techStack';
+import { Contact } from './components/contact';
 
 const Home = () => {
-  const [testContent, setTestContent] = useState('');
-
-  useEffect(()=>{
-    appService.getTestContent().then(
-      response => {
-        setTestContent(response.data);
-    },
-      error => {
-      console.log(error)
-    })
-  },[])
-
+  useLandingScriptsLoader();
   return (
-    <Layout>
-      <Hero
-        title="BlueCloud"
-        content="BlueCloud is a cryptography-based cloud storage platform that allows you to upload, download, and manage your files securely from any anywhere internet access.  "
-        illustration={<HeroIllustration />}
-      />
-    </Layout>
-    // <PageContainer title="Home" description="landing page">
-    //   <Box>
-    //     <h1>BlueCloud</h1>
-    //   </Box>
-    //   <Link to={'/auth/login'}>Login</Link>
-    //   <p>{testContent}</p>
-    // </PageContainer>
-  );
+    <div>
+      <Header />
+      
+      <Hero />  
+
+      <main id="main">
+
+        <About />
+
+        <Values />
+        
+        <Metrics />
+
+        <Features />
+        
+        <TechStack />
+        
+        <Contact />
+    
+      </main>
+
+      <Footer/>
+    
+      <a href="#" className="back-to-top d-flex align-items-center justify-content-center"><i className="bi bi-arrow-up-short"></i></a>
+    </div>
+  )
 };
 
 export default Home;

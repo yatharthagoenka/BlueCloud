@@ -1,69 +1,31 @@
-import { useEffect, useRef } from 'react';
-import ScrollReveal from 'scrollreveal';
-import logo from 'src/assets/images/logos/bc-logo-2.png';
-import { NewsletterForm } from './newsletter-form';
+import heroimg from 'src/assets/landing/img/hero-img.png';
+import { Link } from 'react-router-dom';
 
-export function Hero({ content, illustration, title }) {
-  const scrollRevealRef = useRef([]);
-
-  useEffect(() => {
-    if (scrollRevealRef.current.length > 0) {
-      scrollRevealRef.current.map((ref, index) =>
-        ScrollReveal().reveal(scrollRevealRef.current[index], {
-          duration: 1000,
-          distance: '40px',
-          easing: 'cubic-bezier(0.5, -0.01, 0, 1.005)',
-          origin: 'top',
-          interval: 150,
-        })
-      );
-    }
-
-    return () => ScrollReveal().destroy();
-  }, []);
-
-  function onNewsletterSubmit(values) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({ values });
-      }, 100);
-    });
-  }
-
+export function Hero() {
   return (
-    <section className="text-center lg:w-full lg:py-20 lg:text-left">
-      <div className="hero mx-auto w-full max-w-6xl px-6">
-        <div className="hero-inner relative lg:flex">
-          <div
-            className="hero-copy bg-white pt-10 pb-16 lg:pt-16 lg:pr-20"
-            style={{ minWidth: '600px' }}
-          >
-            <div className="mx-auto w-full max-w-3xl">
-              <img src={logo} style={{width: '60%', marginLeft: -5, marginBottom: 20}} />
-              <p
-                ref={(el) => scrollRevealRef.current.push(el)}
-                className="prose prose-lg px-16 text-gray-500 md:px-0"
-              >
-                {content}
-              </p>
-            </div>
-
-            <div ref={(el) => scrollRevealRef.current.push(el)}>
-              <NewsletterForm
-                className="m-0 mt-8 max-w-md md:flex"
-                submitText="Join network"
-                onSubmit={onNewsletterSubmit}
-              />
+    <section id="hero" className="hero d-flex align-items-center">
+      <div className="container">
+        <div className="row">
+          <div className="col-lg-6 d-flex flex-column justify-content-center">
+            <h1 data-aos="fade-up">A one-stop solution to secure file storage</h1>
+            <h2 data-aos="fade-up" data-aos-delay="400">Provides data security with all-new Hybrid Cryptography excellence.</h2>
+            <div data-aos="fade-up" data-aos-delay="600">
+              <div className="text-center text-lg-start">
+                <Link to="/auth/login">
+                <p className="btn-get-started d-inline-flex align-items-center justify-content-center align-self-center">
+                  <span>Get Started</span>
+                  <i className="bi bi-arrow-right"></i>
+                </p>
+                </Link>
+              </div>
             </div>
           </div>
-
-          {!!illustration && (
-            <div className="relative -ml-6 -mr-6 py-10 lg:p-0">
-              {illustration}
-            </div>
-          )}
+          <div className="col-lg-6 hero-img" data-aos="zoom-out" data-aos-delay="200">
+            <img src={heroimg} className="img-fluid" alt="" />
+          </div>
         </div>
       </div>
+  
     </section>
   );
 }

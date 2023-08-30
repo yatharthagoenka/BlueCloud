@@ -1,32 +1,40 @@
-import { Link } from 'react-router-dom'
-import cloud from 'src/assets/images/logos/cloud-logo.svg';
-import { Button } from '@mui/material';
+import React from 'react';
+import logo from 'src/assets/landing/cloud-logo.svg';
+import { Link } from 'react-router-dom';
 
-const NAV_LINKS = [
-  { name: 'Login' },
-  { name: 'Sign Up' }
-];
-
-export function Header({ title }) {
+const Header = () => {
   return (
-    <header className="relative py-6">
-      <div className="mx-auto w-full max-w-6xl px-6">
-        <div className="relative flex items-center justify-between">
-          <h1 className="m-0 text-xl font-bold uppercase leading-none">
-            <Link to="/" className="flex items-center no-underline">
-              <img src={cloud} style={{width: 40}} />
-            </Link>
-          </h1>
-          <div style={{zIndex: 1}}>
+    <>
+    <header id="header" className="header fixed-top">
+      <div className="container-fluid container-xl d-flex align-items-center justify-content-between">
+  
+        <a href="/" className="logo d-flex align-items-center">
+          <img src={logo} alt="" />
+          <span>BlueCloud</span>
+        </a>
+  
+        <nav id="navbar" className="navbar">
+          <ul>
+            <li><a className="nav-link scrollto active" href="#hero">Home</a></li>
+            <li><a className="nav-link scrollto" href="#about">About</a></li>
+            <li><a className="nav-link scrollto" href="#values">Values</a></li>
+            <li><a className="nav-link scrollto" href="#features">Concept</a></li>
+            <li><a className="nav-link scrollto" href="#tech_stack">Technology</a></li>
+            <li><a className="nav-link scrollto" href="#contact">Contact</a></li>
+            <li>
             <Link to="/auth/login">
-              <Button variant="contained" color="error" style={{marginRight: 20}}>Login</Button>
+              <p className="getstarted">Get Started</p>
             </Link>
-            <Link to="/auth/register">
-              <Button variant="contained" color="success">Sign Up</Button>
-            </Link>
-          </div>
-        </div>
+            </li>
+          </ul>
+          <i className="bi bi-list mobile-nav-toggle"></i>
+        </nav>
+  
       </div>
     </header>
+    </>
   )
 }
+
+export default Header;
+
