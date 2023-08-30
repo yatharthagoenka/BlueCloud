@@ -5,6 +5,10 @@ class AppService {
     return await axios.get(process.env.REACT_APP_API_URL);
   }
 
+  async getPlatformMetrics() {
+    return await axios.get(process.env.REACT_APP_API_URL + 'metrics');
+  }
+
   async getUser(userID, authToken){
     return await axios.get(process.env.REACT_APP_API_URL + 'user',{
       headers: {

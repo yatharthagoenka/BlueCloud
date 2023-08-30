@@ -131,4 +131,37 @@ export class UserService {
       { $set: {storage: updatedStorage} }
     );
   }
+
+  async getPlatformMetrics(): Promise<Object>{
+    const metricsEntity = {
+      userCount: 0,
+      fileCount: 0, 
+      activeHours: 0, 
+      storageUsed: 0
+    }
+    metricsEntity.userCount = await this.userModel.count();
+    let obj = await this.userModel.aggregate([
+      {
+        $project: {
+          fileArraySize: { $size: "$files" },
+          userStorageUsed: "$storage"
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          fileCount: { $sum: "$fileArraySize" },
+          storageUsed: { $sum: "$userStorageUsed" }
+        }
+      }
+    ]);
+    metricsEntity.fileCount = obj[0].fileCount;
+    metricsEntity.storageUsed = Math.round(obj[0].storageUsed / 1000 * 1000);
+    const activeSince = new Date('2023-03-20T00:00:00');
+    const currentDate = new Date();
+
+    const timeDifference = (currentDate.valueOf() - activeSince.valueOf());
+    metricsEntity.activeHours = Math.round(timeDifference / (1000 * 60 * 60));
+    return metricsEntity;
+  }
 }

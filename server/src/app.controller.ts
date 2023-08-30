@@ -16,6 +16,11 @@ export class AppController {
     return this.appService.getHello();
   }
 
+  @Get('metrics')
+  async getPlatformMetrics(): Promise<Object> {
+    return this.appService.getPlatformMetrics();
+  }
+
   @Get('pytest')
   async getPythonTest(): Promise<string> {
     try {

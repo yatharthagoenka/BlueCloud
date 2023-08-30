@@ -14,7 +14,7 @@
 
 A cryptographic cloud-based file storage system.
 
-Check it out [here 🔗](http://3.26.196.196/)
+Check it out [here 🔗](http://3.104.70.53/)
 
 <img src="webv2\public\landing-page.png" align="left" width="450" hspace="10" vspace="10">
 
