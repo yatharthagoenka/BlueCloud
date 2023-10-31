@@ -54,6 +54,17 @@ export class FilesController {
       }
     }
 
+    @Get('/clear_cached')
+    @UseGuards(AuthGuard("jwt"))
+    async clearCachedFile(@Res() res, @Query('fileID', new ValidateObjectId()) fileID) {
+      try {
+        await this.filesService.clearCachedFile(fileID);
+        return res.status(HttpStatus.OK);
+      } catch (error) {
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: error });
+      }
+    }
+
     @Delete('')
     @UseGuards(AuthGuard("jwt"))
     async deleteFile(

@@ -67,7 +67,6 @@ export class FilesService {
             const response = await axios.post(`${process.env.FLASK_MICROSERVICE_API_URL}/encrypt`, {
                 uuid: savedFile.uuid,
             });
-            // console.log(response.data.rsa_priv_base64);
             return response.data.rsa_priv_base64;
         } catch (error) {
             this.loggerService.error(`encryptFile : ${error}`);
@@ -154,13 +153,22 @@ export class FilesService {
             this.loggerService.error(`File with ID ${fileID} does not exist`)
             throw new HttpException('File does not exists', HttpStatus.BAD_REQUEST);
         }
-        if(fs.existsSync(path.join(__dirname, '..', '..', 'store', 'uploads', `${file.uuid}`))) {
-            this.loggerService.info('Original file already exists, returning from cache.');
-            return path.join(__dirname, '..', '..', 'store', 'uploads', `${file.uuid}`);
-        }
         try{
             if(file.rsa_priv_base64 == "") return this.decryptFile(file.uuid, user_priv_base64);
             else return this.decryptFile(file.uuid, file.rsa_priv_base64);
+        }catch(err){
+            this.loggerService.error(`downloadFile: ${err}`);
+        }
+    }
+
+    async clearCachedFile(fileID: ObjectId): Promise<void> {
+        const file = await this.fileModel.findById(fileID.toString());
+        if(!file) {
+            this.loggerService.error(`File with ID ${fileID} does not exist`)
+            throw new HttpException('File does not exists', HttpStatus.BAD_REQUEST);
+        }
+        try{
+            this.deleteFileUtil(`store/uploads/${file.uuid}`)
         }catch(err){
             this.loggerService.error(`downloadFile: ${err}`);
         }

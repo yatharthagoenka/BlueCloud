@@ -77,6 +77,18 @@ class AppService {
       responseType: 'blob'
     });
   }
+  
+  async clearCachedFile(fileID, authToken) {
+    return await axios.get(process.env.REACT_APP_API_URL + 'files/clear_cached', {
+      headers: {
+        Authorization: `Bearer ${authToken}`
+      },
+      params:{
+        fileID: fileID
+      },
+      responseType: 'blob'
+    });
+  }
 
   async deleteFile(userID, fileID, authToken) {
     return await axios.delete(process.env.REACT_APP_API_URL + 'files', {

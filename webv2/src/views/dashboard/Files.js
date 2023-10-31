@@ -49,7 +49,6 @@ const Files = () => {
             AppService.getUserFiles(currentUser.user._id, JSON.parse(localStorage.getItem("user")).token).then(
                 response => {
                     setFiles(response.data.files);
-                    console.log(response.data.files)
                 },
                 error => {
                     setSnackBarMessage("Error getting files. Try reloading the page.");
@@ -100,7 +99,7 @@ const Files = () => {
         )
     }
 
-    const downloadFile = (originalname, fileID, access) => {
+    const downloadFile = (originalname, fileID, access, privateKeyString) => {
         if(!access){
             setDownloadWithKeyFilename(originalname);
             setGetKeyFileID(fileID);
@@ -108,13 +107,21 @@ const Files = () => {
         }else{
             AppService.downloadFile(fileID, privateKeyString, JSON.parse(localStorage.getItem("user")).token).then(
                 response => {
-                    console.log(response)
                     const url = window.URL.createObjectURL(new Blob([response.data]));
                     const link = document.createElement('a');
                     link.href = url;
                     link.setAttribute('download', originalname);
                     document.body.appendChild(link);
                     link.click();
+                    // clear file from server cache
+                    AppService.clearCachedFile(fileID, JSON.parse(localStorage.getItem("user")).token).then(
+                        response => {
+                            console.log(response)
+                        },
+                        error => {
+                            console.log(error)
+                        }
+                    );
                 },
                 error => {
                     setSnackBarMessage("Error downloading file. Try again.");
@@ -223,7 +230,7 @@ const Files = () => {
             </DialogContent>
             <DialogActions>
             <Button onClick={handleKeyDialogClose}>Cancel</Button>
-            <Button onClick={()=>{downloadFile(downloadWithKeyFilename, getKeyFileID, privateKeyString, 1)}}>Download</Button>
+            <Button onClick={()=>{downloadFile(downloadWithKeyFilename, getKeyFileID, 1, privateKeyString)}}>Download</Button>
             </DialogActions>
         </Dialog>
         <DashboardCard title="My Files">
