@@ -113,15 +113,6 @@ const Files = () => {
                     link.setAttribute('download', originalname);
                     document.body.appendChild(link);
                     link.click();
-                    // clear file from server cache
-                    AppService.clearCachedFile(fileID, JSON.parse(localStorage.getItem("user")).token).then(
-                        response => {
-                            console.log(response)
-                        },
-                        error => {
-                            console.log(error)
-                        }
-                    );
                 },
                 error => {
                     setSnackBarMessage("Error downloading file. Try again.");
@@ -196,9 +187,6 @@ const Files = () => {
             {privateKeyString && 
                 <div>
                     <br/>
-                    <DialogContentText>
-                    (Click on the dialog below to copy the key to clipboard.)
-                    </DialogContentText>
                     <DialogContentText onClick={copyToClipboard} style={{padding: 20, marginTop: 20, backgroundColor: '#949292', color: 'white', overflowX: 'auto', position: 'relative',}}>
                     {privateKeyString}
                     </DialogContentText>

@@ -48,22 +48,23 @@ export class FilesController {
     async downloadFile(@Res() res, @Query('fileID', new ValidateObjectId()) fileID,  @Query('user_priv_base64') user_priv_base64) {
       try {
         const file = await this.filesService.downloadFile(fileID, user_priv_base64);
-        return res.status(HttpStatus.OK).download(file)
+        res.status(HttpStatus.OK).download(file);
+        return await this.filesService.clearCachedFile(fileID);
       } catch (error) {
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: error });
       }
     }
 
-    @Get('/clear_cached')
-    @UseGuards(AuthGuard("jwt"))
-    async clearCachedFile(@Res() res, @Query('fileID', new ValidateObjectId()) fileID) {
-      try {
-        await this.filesService.clearCachedFile(fileID);
-        return res.status(HttpStatus.OK);
-      } catch (error) {
-        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: error });
-      }
-    }
+    // @Get('/clear_cached')
+    // @UseGuards(AuthGuard("jwt"))
+    // async clearCachedFile(@Res() res, @Query('fileID', new ValidateObjectId()) fileID) {
+    //   try {
+        
+    //     return res.status(HttpStatus.OK);
+    //   } catch (error) {
+    //     return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: error });
+    //   }
+    // }
 
     @Delete('')
     @UseGuards(AuthGuard("jwt"))
