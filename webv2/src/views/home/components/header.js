@@ -22,9 +22,9 @@ const Header = () => {
             <li><a className="nav-link scrollto" href="#tech_stack">Technology</a></li>
             <li><a className="nav-link scrollto" href="#contact">Contact</a></li>
             <li>
-            <Link to="/auth/login">
+            <a href="http://3.104.70.53:8080">
               <p className="getstarted">Get Started</p>
-            </Link>
+            </a>
             </li>
           </ul>
           <i className="bi bi-list mobile-nav-toggle"></i>

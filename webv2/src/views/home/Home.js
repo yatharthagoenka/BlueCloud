@@ -1,8 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import appService from 'src/services/app.service';
 import Header from './components/header';
 import useLandingScriptsLoader from './components/scriptLoader';
-import { Helmet } from 'react-helmet';
 
 import 'src/assets/landing/vendor/aos/aos.css';
 import 'src/assets/landing/vendor/bootstrap/css/bootstrap.min.css';

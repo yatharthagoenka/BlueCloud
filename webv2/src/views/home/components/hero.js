@@ -11,12 +11,12 @@ export function Hero() {
             <h2 data-aos="fade-up" data-aos-delay="400">Provides data security with all-new Hybrid Cryptography excellence.</h2>
             <div data-aos="fade-up" data-aos-delay="600">
               <div className="text-center text-lg-start">
-                <Link to="/auth/login">
+                <a href="http://3.104.70.53:8080">
                 <p className="btn-get-started d-inline-flex align-items-center justify-content-center align-self-center">
                   <span>Get Started</span>
                   <i className="bi bi-arrow-right"></i>
                 </p>
-                </Link>
+                </a>
               </div>
             </div>
           </div>
