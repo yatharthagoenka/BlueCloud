@@ -5,7 +5,7 @@ import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import { OverviewUsers } from 'src/sections/overview/overview-users';
 import { OverviewFiles } from 'src/sections/overview/overview-files';
 import { OverviewLatestFiles } from 'src/sections/overview/overview-latest';
-import { OverviewHours } from 'src/sections/overview/overview-hours';
+import { OverviewDays } from 'src/sections/overview/overview-days';
 import { OverviewStorage } from 'src/sections/overview/overview-storage';
 import { OverviewTraffic } from 'src/sections/overview/overview-traffic';
 import FilesService from 'src/contexts/files-context';
@@ -15,26 +15,47 @@ const now = new Date();
 
 const Page = () => {
   const auth = useAuth();
+  const [files , setFiles] = useState([]);
   const [metrics, setMetrics] = useState({
     userCount: 0,
     fileCount: 0, 
-    activeHours: 0, 
+    activeDays: 0, 
     storageUsed: 0
   });
 
-  useEffect(() => {
-    FilesService.getPlatformMetrics().then(
-        response => {
-          setMetrics(response.data);
-      }
-    );
-  }, []);
+  useEffect(()=>{
+    if(!(files.content && files.content.length)){
+      FilesService.getUserFiles(auth.user.id, auth.user.token).then(
+          response => {
+            setFiles(response.data.files);
+            setMetrics(prevMetrics => ({
+              ...prevMetrics,
+              fileCount: response.data.files.length
+            }));
+          }
+      );
+    }
+  }, [])
+
+  useEffect(()=>{
+    if(!(files.content && files.content.length)){
+      FilesService.getPlatformMetrics().then(
+          response => {
+            setMetrics(prevMetrics => ({
+              ...prevMetrics,
+              userCount: response.data.userCount,
+              activeDays: Math.floor(response.data.activeHours/24)
+            }));
+          }
+      );
+    }
+  }, [])
+
   useEffect(() => {
     FilesService.getUser(auth.user.id, auth.user.token).then(
       response => {
         setMetrics(prevMetrics => ({
           ...prevMetrics,
-          fileCount: response.data.files.length,
           storageUsed: Number((response.data.storage/1000).toFixed(2))
         }));
       }
@@ -98,16 +119,16 @@ const Page = () => {
             sm={6}
             lg={3}
           >
-            <OverviewHours
+            <OverviewDays
               sx={{ height: '100%' }}
-              value={metrics.activeHours}
+              value={metrics.activeDays}
             />
           </Grid>
           <Grid
             xs={12}
             lg={8}
           >
-            <OverviewLatestFiles />
+            <OverviewLatestFiles files={files}/>
           </Grid>
           <Grid
             xs={12}

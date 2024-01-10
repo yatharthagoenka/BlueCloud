@@ -26,20 +26,8 @@ const statusMap = {
   'true': 'success'
 };
 
-export const OverviewLatestFiles = () => {
-  const [files , setFiles] = useState([]);
-  const auth = useAuth();
-
-  useEffect(()=>{
-    if(!(files.content && files.content.length)){
-      FilesService.getUserFiles(auth.user.id, auth.user.token).then(
-          response => {
-            setFiles(response.data.files);
-          }
-      );
-    }
-  }, [])
-
+export const OverviewLatestFiles = (props) => {
+  const {files} = props;
   return (
     <Card sx={{ height: '100%' }}>
       <CardHeader title="Latest Files" />
