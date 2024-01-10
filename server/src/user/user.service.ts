@@ -4,11 +4,14 @@ import { ObjectId } from 'mongodb';
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
 import { LoginDTO, RegisterDTO } from '../authentication/dto/auth.dto';
-import { IPayload, IUser } from 'src/interfaces';
+import { IFile, IPayload, IUser } from 'src/interfaces';
 
 @Injectable()
 export class UserService {
-  constructor( @InjectModel('User') private userModel: Model<IUser>) {}
+  constructor( 
+    @InjectModel('User') private userModel: Model<IUser>,
+    @InjectModel('Files') private fileModel: Model<IFile>
+    ) {}
 
   async create(registerDTO: RegisterDTO) : Promise<IUser> {
     const { username } = registerDTO;
@@ -82,26 +85,20 @@ export class UserService {
       storageUsed: 0
     }
     metricsEntity.userCount = await this.userModel.count();
-    let obj = await this.userModel.aggregate([
-      {
-        $project: {
-          fileArraySize: { $size: "$files" },
-          userStorageUsed: "$storage"
-        }
-      },
+    metricsEntity.fileCount = await this.fileModel.countDocuments();
+    let storageFinder = await this.fileModel.aggregate([
       {
         $group: {
           _id: null,
-          fileCount: { $sum: "$fileArraySize" },
-          storageUsed: { $sum: "$userStorageUsed" }
+          totalSize: {
+            $sum: "$size"
+          }
         }
       }
-    ]);
-    metricsEntity.fileCount = obj[0].fileCount;
-    metricsEntity.storageUsed = Math.round(obj[0].storageUsed / 1000 * 1000);
+    ]).exec();
+    metricsEntity.storageUsed = Number((storageFinder[0].totalSize/1000).toFixed(2)); // MBs    
     const activeSince = new Date('2023-03-20T00:00:00');
     const currentDate = new Date();
-
     const timeDifference = (currentDate.valueOf() - activeSince.valueOf());
     metricsEntity.activeHours = Math.round(timeDifference / (1000 * 60 * 60));
     return metricsEntity;
