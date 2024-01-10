@@ -4,7 +4,7 @@ import { ObjectId } from 'mongodb';
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
 import { LoginDTO, RegisterDTO } from '../authentication/dto/auth.dto';
-import { IPayload, IUser, IActivityAction, IUserActivityRecord } from 'src/interfaces';
+import { IPayload, IUser } from 'src/interfaces';
 
 @Injectable()
 export class UserService {
@@ -17,12 +17,7 @@ export class UserService {
       throw new HttpException('User already exists with given username', HttpStatus.BAD_REQUEST);
     }
     const createdUser : IUser = new this.userModel(registerDTO);
-    const activityRecord = {
-        time: new Date(),
-        action: IActivityAction.REGISTER
-    }
     createdUser.storage = 0;
-    createdUser.activity.push(activityRecord)
     return await createdUser.save();
   }
 
@@ -30,24 +25,11 @@ export class UserService {
     const { username, password } = UserDTO;
     const user : IUser = await this.userModel
       .findOne({ username })
-      .select('username email password');
+      .select('username name email password');
     if(!user) {
       throw new HttpException('User does not exists', HttpStatus.BAD_REQUEST);
     }
     if(await bcrypt.compare(password, user.password)) {
-      const activityRecord : IUserActivityRecord = {
-        time: new Date(),
-        action: IActivityAction.LOGIN
-      }
-      await this.userModel.updateOne(
-        { _id: user._id },
-        { $push: {
-          activity: {
-            $each: [activityRecord],
-            $slice: -5
-          }
-        }}
-      );
       return user;
     }else{
       throw new HttpException('Invalid credentials. Try again', HttpStatus.BAD_REQUEST);
@@ -64,59 +46,19 @@ export class UserService {
     return await this.userModel.findOne({ username });
   }
 
-  async getUserFiles(id: string){
-    const userID = { _id: new ObjectId(id) };
-    return await this.userModel.findById(userID).select('files');
-  }
-
-  async getUserActivity(userID: ObjectId){
-    const user = await this.userModel.findById(userID).select('activity');
-    const recentActivity = user.activity?.sort((a, b) => b.time.getTime() - a.time.getTime());
-    return recentActivity;
-  }
-
-  async getLargestFiles(userID: ObjectId){
-    const user = await this.userModel.findById(userID).select('files');
-    const largestFiles = user.files.sort((a, b) => b.size - a.size).slice(0, 5);
-    return largestFiles;
-  }
-
   async editUser(id: string, payload: any){
     const userID = { _id: new ObjectId(id) };
-    const editedUser = await this.userModel.findByIdAndUpdate(userID, {[payload.field]: payload.value});
+    const editedUser = await this.userModel.findByIdAndUpdate(userID, payload);
     return editedUser;
   }
 
-  async addFileToUser(userID: string, file: any){
+  async updateUserStorage(userID: string, size: any, operation: Number){
     const user = await this.userModel.findById(userID);
-    const updatedStorage = user.storage + file.size;
-    const activityRecord : IUserActivityRecord = {
-      time: new Date(),
-      action: IActivityAction.UPLOAD
-    }
+    const updatedStorage = user.storage + (operation?size:-size);
     await this.userModel.updateOne(
       { _id: userID },
-      { $push: { 
-          files: file, 
-          activity: {
-            $each: [activityRecord],
-            $slice: -5
-          } 
-        }, 
-        $set: { storage: updatedStorage } }
+      { $set: { storage: updatedStorage } }
     );
-  }
-
-  async revokeFileAccess(userID: ObjectId, fileID: ObjectId){
-    await this.userModel.updateOne(
-      {
-        _id: userID,
-        'files.fileID': fileID
-      },
-      {
-        $set: { 'files.$.access': 0 }
-      }
-    )
   }
 
   async deleteUsersFile(userID: ObjectId, fileID: ObjectId, size: number){

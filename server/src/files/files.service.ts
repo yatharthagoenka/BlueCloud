@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ObjectId } from 'mongodb';
 import { Model } from 'mongoose';
-import { IFile, IRole, IUserFileRecord } from 'src/interfaces';
+import { IFile, IFileUsersAccess, IRole } from 'src/interfaces';
 import { WinstonLoggerService } from 'src/winston-logger.service';
 import { v4 as uuidv4 } from 'uuid';
 import { extname } from 'path';
@@ -11,6 +11,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { promisify } from 'util';
 import axios from 'axios';
+import { Exception } from 'ts-httpexceptions';
 
 const deleteFolderUtil = promisify(fs.rm);
 
@@ -30,7 +31,6 @@ export class FilesService {
         }
         const rsa_priv_base64 = file.rsa_priv_base64;
         await this.fileModel.findByIdAndUpdate(file._id, {'rsa_priv_base64': ''});
-        await this.userService.revokeFileAccess(userID, fileID);
         return rsa_priv_base64;
     }
 
@@ -38,6 +38,7 @@ export class FilesService {
         const { buffer, originalname } = file;
         const extension = extname(originalname);
         const uuid = `${uuidv4()}`;
+        // const tempImagePath = `/home/yatharthagoenka/Desktop/BlueCloud/server/store/uploads/${uuid}`;
         const tempImagePath = `/app/store/uploads/${uuid}`;
         try {
             return new Promise((resolve, reject) => {
@@ -89,10 +90,20 @@ export class FilesService {
     }
     
     async getUserFiles(userId: ObjectId): Promise<any> {
-        return await this.userService.getUserFiles(userId.toString());
+        try {
+            const files = await this.fileModel.find({ 'users.userID': userId }).lean().exec();
+            const sanitizedFiles = files.map(file => {
+              const sanitizedUsers = file.users.filter(user => user.userID === userId);
+              return { ...file, users: sanitizedUsers, rsa_priv_base64: (file.rsa_priv_base64!="") };
+            });
+            return sanitizedFiles;
+        } catch (error) {
+            this.loggerService.error(`getUserFiles : ${error}`);
+            throw new HttpException('Invalid query', HttpStatus.BAD_REQUEST);
+        }
     }
 
-    async createFile(userID: ObjectId, file: Express.Multer.File) : Promise<IUserFileRecord> {
+    async createFile(userID: ObjectId, file: Express.Multer.File) : Promise<IFile> {
         const user = await this.userService.findById(userID.toString());
         let savedFile;
         let resultCreateFile;
@@ -100,7 +111,7 @@ export class FilesService {
             this.loggerService.error(`createFile: User with ID ${userID} does not exist`)
             throw new HttpException('User does not exists', HttpStatus.BAD_REQUEST);
         }
-        // Saving to server
+        // Send to store and encrypt
         try{
             savedFile = await this.saveFile(file);
             var fileSize = (fs.statSync(path.join(__dirname, '..', '..', 'store', 'uploads', `${savedFile.uuid}`)).size)/1000;
@@ -111,32 +122,25 @@ export class FilesService {
             return error;
         }
 
+        const currentUser : IFileUsersAccess = {
+            userID: userID,
+            role: IRole.OWNER
+        }
+        const createFileDTO : IFile = {
+            originalname: `${savedFile.originalname}${savedFile.extension}`,
+            uuid: `${savedFile.uuid}`,
+            rsa_priv_base64: `${rsa_priv_base64}`,
+            size: fileSize,
+            users: [currentUser],
+            createdAt: new Date()
+        }
 
-        // Saving to db
+        // Saving metadata in db
         try{
-            const createFileDTO : IFile = {
-                originalname: `${savedFile.originalname}${savedFile.extension}`,
-                uuid: `${savedFile.uuid}`,
-                rsa_priv_base64: `${rsa_priv_base64}`,
-                size: fileSize,
-                ownerID: userID,
-                // gems: [{
-                //     index: 0,
-                //     enc: "none"
-                // }]
-            }
             // save to filesModel
             const createdFile = new this.fileModel(createFileDTO);
             resultCreateFile = await createdFile.save();
-            // save to usersModel
-            var userFileRecord : IUserFileRecord = {
-                originalname: savedFile.originalname,
-                fileID: resultCreateFile._id,
-                access: 1,
-                size: fileSize,
-                role: [IRole.OWNER, IRole.EDITOR, IRole.VIEWER]
-            }
-            await this.userService.addFileToUser(userID.toString(), userFileRecord);
+            await this.userService.updateUserStorage(userID.toString(), fileSize, 1);
             this.loggerService.info(`File ${savedFile.uuid} added to db and user profile.`);
         }catch(error){
             this.deleteFileUtil(`store/uploads/${savedFile.uuid}`)
@@ -144,7 +148,7 @@ export class FilesService {
             this.loggerService.error(`Unable to add file : ${savedFile.uuid} to db. Deleted from server. `);
             return error;
         }
-        return userFileRecord;
+        return createFileDTO;
     }
 
     async downloadFile(fileID: ObjectId, user_priv_base64: string): Promise<string> {
@@ -186,36 +190,33 @@ export class FilesService {
         });
     }
     
-    async delete(userID: ObjectId, fileID: ObjectId, location: string): Promise<string> {
+    async delete(userID: ObjectId, fileID: ObjectId): Promise<string> {
         const file = await this.fileModel.findById(fileID.toString());
         if(!file) {
             this.loggerService.error(`File with ID ${fileID} does not exist`)
             throw new HttpException('File does not exists', HttpStatus.BAD_REQUEST);
         }
-        if(location == 'server' || location == 'all'){
-            // Deleting from server
-            try {
-                await deleteFolderUtil(`store/files/${file.uuid}`, { recursive: true })
-                this.loggerService.info(`store/files : ${file.uuid} : deleted successfully`);
-            }catch (error) {
-                this.loggerService.error(`store/files : ${file.uuid} : ${error}`);
-            }
-            try{
-                await deleteFolderUtil(`store/gems/${file.uuid}`, { recursive: true })
-                this.loggerService.info(`store/gems : ${file.uuid} : deleted successfully`);
-            }catch(error){
-                this.loggerService.error(`store/gems : ${file.uuid} : ${error}`);
-            }
+        
+        // Deleting from server
+        try {
+            await deleteFolderUtil(`store/files/${file.uuid}`, { recursive: true })
+            this.loggerService.info(`store/files : ${file.uuid} : deleted successfully`);
+        }catch (error) {
+            this.loggerService.error(`store/files : ${file.uuid} : ${error}`);
         }
-        if(location == 'db' || location == 'all'){
-            // Deleting from db
-            try{
-                await this.userService.deleteUsersFile(userID, fileID, file.size);
-                await this.fileModel.findByIdAndDelete(fileID);
-                this.loggerService.info(`File deleted from db: ${fileID}`);
-            }catch(error){
-                this.loggerService.error(`Unable to delete file from db: ${error}`);
-            }
+        try{
+            await deleteFolderUtil(`store/gems/${file.uuid}`, { recursive: true })
+            this.loggerService.info(`store/gems : ${file.uuid} : deleted successfully`);
+        }catch(error){
+            this.loggerService.error(`store/gems : ${file.uuid} : ${error}`);
+        }
+        // Deleting from db
+        try{
+            await this.userService.updateUserStorage(userID.toString(), file.size, 0);
+            await this.fileModel.findByIdAndDelete(fileID);
+            this.loggerService.info(`File deleted from db: ${fileID}`);
+        }catch(error){
+            this.loggerService.error(`Unable to delete file from db: ${error}`);
         }
         return file.uuid;
     }

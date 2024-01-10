@@ -21,28 +21,6 @@ export class UserController {
         }
         return res.status(HttpStatus.OK).json(user);
     }
-    
-    @Get('/activity')
-    @UseGuards(AuthGuard("jwt"))
-    async getUserActivity(@Res() res, @Query('userID', new ValidateObjectId()) userID) {
-        try {
-            const userActivity = await this.userService.getUserActivity(userID);
-            return res.status(HttpStatus.OK).json(userActivity);
-        } catch (error) {
-            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ getLargestFiles: error });
-        }
-    }
-    
-    @Get('/largestFiles')
-    @UseGuards(AuthGuard("jwt"))
-    async getLargestFiles(@Res() res, @Query('userID', new ValidateObjectId()) userID) {
-        try {
-            const files = await this.userService.getLargestFiles(userID);
-            return res.status(HttpStatus.OK).json(files);
-        } catch (error) {
-            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ getLargestFiles: error });
-        }
-    }
 
     @Patch('/edit')
     @UseGuards(AuthGuard("jwt"))

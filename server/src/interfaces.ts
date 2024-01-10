@@ -4,11 +4,11 @@ import { ObjectId } from "mongodb";
 export interface IUser extends Document {
     _id: ObjectId
     username: string
+    firstName: string
+    lastName: string
     email: string
     password: string
     storage?: number
-    activity?: IUserActivityRecord[]
-    files?: IUserFileRecord[]
     createdAt: Date
 }
 
@@ -18,25 +18,9 @@ export enum IRole{
     OWNER = 'owner',
 }
 
-export enum IActivityAction{
-    LOGIN = 'login',
-    REGISTER = 'register',
-    LOGOUT = 'logout',
-    UPLOAD = 'upload',
-    DELETE = 'delete',
-}
-
-export interface IUserFileRecord{
-    originalname: string
-    fileID: ObjectId
-    access: number
-    size?: number
-    role: IRole[]
-}
-
-export interface IUserActivityRecord{
-    time: Date
-    action: IActivityAction
+export interface IFileUsersAccess{
+    userID: ObjectId,
+    role: IRole
 }
 
 export interface IFile{
@@ -44,15 +28,13 @@ export interface IFile{
     uuid: string
     rsa_priv_base64: string
     size?: number
-    ownerID: ObjectId
-    gems?:{
-        index: number
-        enc: string
-    }[]
+    users: IFileUsersAccess[]
+    createdAt: Date
 }
 
 export interface IPayload{
     username:string
+    email:string
 }
 
 export interface FileDTO{

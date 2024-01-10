@@ -17,6 +17,7 @@ export class AuthController {
         const user : IUser = await this.userService.create(registerDTO);
         const payload : IPayload = {
             username: user.username,
+            email: user.email
         };
         const token = await this.authService.signPayload(payload);
         return res.status(HttpStatus.OK).json({ user, token });
@@ -31,6 +32,7 @@ export class AuthController {
       const user = await this.userService.findByLogin(loginDTO);
       const payload : IPayload = {
         username: user.username,
+        email: user.email
       };
       try{
         const token = await this.authService.signPayload(payload);

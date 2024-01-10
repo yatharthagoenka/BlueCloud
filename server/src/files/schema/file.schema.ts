@@ -1,6 +1,19 @@
 import * as mongoose from 'mongoose';
 import { IRole } from 'src/interfaces';
 
+export const usersRecord = new mongoose.Schema({
+  userID:{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Users',
+    required: true,
+  },
+  role: [{
+    type: String,
+    enum: [IRole.VIEWER, IRole.EDITOR, IRole.OWNER],
+    required: true,
+  }]
+});
+
 export const FileSchema = new mongoose.Schema({
     originalname:{
       type: String,
@@ -16,20 +29,9 @@ export const FileSchema = new mongoose.Schema({
     size:{
       type: Number,
     },
-    ownerID:{
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
+    users: [usersRecord],
+    createdAt: {
+      type: Date,
+      default: Date.now,
     },
-    gems: [
-      {
-        index: {
-          type: Number,
-          required: true,
-        },
-        enc: {
-          type: String,
-          required: true,
-        }
-      },
-    ],
 });

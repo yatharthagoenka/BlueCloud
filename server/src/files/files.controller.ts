@@ -17,7 +17,7 @@ export class FilesController {
     @UseGuards(AuthGuard("jwt"))
     async getUserFiles(@Res() res, @Query('userID', new ValidateObjectId()) userID) {
       const files = await this.filesService.getUserFiles(userID);
-      return res.status(HttpStatus.OK).json(files);
+      return res.status(HttpStatus.OK).json({files: files});
     }
 
     @Get('/getKey')
@@ -54,18 +54,7 @@ export class FilesController {
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: error });
       }
     }
-
-    // @Get('/clear_cached')
-    // @UseGuards(AuthGuard("jwt"))
-    // async clearCachedFile(@Res() res, @Query('fileID', new ValidateObjectId()) fileID) {
-    //   try {
-        
-    //     return res.status(HttpStatus.OK);
-    //   } catch (error) {
-    //     return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: error });
-    //   }
-    // }
-
+    
     @Delete('')
     @UseGuards(AuthGuard("jwt"))
     async deleteFile(
@@ -74,7 +63,7 @@ export class FilesController {
       @Res() res
       ) {
       try {
-        await this.filesService.delete(userID, fileID, 'all');
+        await this.filesService.delete(userID, fileID);
         return res.status(HttpStatus.OK).json({ message: 'File deleted successfully' });
       } catch (error) {
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: error });
