@@ -103,7 +103,7 @@ export class FilesService {
         }
     }
 
-    async createFile(userID: ObjectId, file: Express.Multer.File) : Promise<IFile> {
+    async createFile(userID: ObjectId, file: Express.Multer.File) : Promise<any> {
         const user = await this.userService.findById(userID.toString());
         let savedFile;
         let resultCreateFile;
@@ -148,7 +148,7 @@ export class FilesService {
             this.loggerService.error(`Unable to add file : ${savedFile.uuid} to db. Deleted from server. `);
             return error;
         }
-        return createFileDTO;
+        return resultCreateFile;
     }
 
     async downloadFile(fileID: ObjectId, user_priv_base64: string): Promise<string> {
