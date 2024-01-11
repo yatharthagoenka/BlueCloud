@@ -160,19 +160,6 @@ const Page = () => {
                 </Button>
               </form>
             )}
-            {method === 'oauth' && (
-              <div>
-                <Typography
-                  sx={{ mb: 1 }}
-                  variant="h6"
-                >
-                  Not available in the demo
-                </Typography>
-                <Typography color="text.secondary">
-                  To prevent unnecessary costs we disabled this feature in the demo.
-                </Typography>
-              </div>
-            )}
           </div>
         </Box>
       </Box>

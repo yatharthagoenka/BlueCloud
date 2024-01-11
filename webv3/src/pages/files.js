@@ -13,7 +13,7 @@ import {
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import { FilesCard } from 'src/sections/files/files-card';
 import { FilesSearch } from 'src/sections/files/files-search';
-import FilesService from 'src/contexts/files-context';
+import FilesService from 'src/contexts/app-context';
 import { useAuth } from 'src/hooks/use-auth';
 
 const Page = () => {
@@ -24,26 +24,34 @@ const Page = () => {
 
   useEffect(()=>{
     if(!(files.content && files.content.length)){
-        FilesService.getUserFiles(auth.user.id, auth.user.token).then(
+      try{
+        FilesService.getUserFiles(auth.user?.id, auth.user?.token).then(
             response => {
               setFiles(response.data.files);
             }
         );
+      }catch(error){
+        console.log(error);
+      }
     }
   }, [])
 
   const handleNewFileChange = async (event) => {
     const data = new FormData()
     data.append('file', event.target.files[0])
-    await FilesService.uploadFile(data, auth.user.id, auth.user.token).then(
-      response => {
-        const updatedFiles = [...files, response.data];
-        setFiles(updatedFiles);
-      },
-      error => {
-        console.log(error)
-      }
-    );
+    try{
+      await FilesService.uploadFile(data, auth.user?.id, auth.user?.token).then(
+        response => {
+          const updatedFiles = [...files, response.data];
+          setFiles(updatedFiles);
+        },
+        error => {
+          console.log(error)
+        }
+      );
+    }catch(error){
+      console.log(error);
+    }
   };
   const handleNewFileButtonClick = () => {
     fileInputRef.current.click();

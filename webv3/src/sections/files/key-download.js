@@ -7,7 +7,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import FilesService from 'src/contexts/files-context';
+import FilesService from 'src/contexts/app-context';
 
 export const DownloadWithKey = (props) => {
   const { open, file, token, onClose } = props;

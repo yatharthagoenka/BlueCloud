@@ -40,3 +40,7 @@ export interface IPayload{
 export interface FileDTO{
     url: string
 }
+
+export interface DeleteUserDTO{
+    password: string
+}

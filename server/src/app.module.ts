@@ -8,11 +8,15 @@ import { FilesModule } from './files/files.module';
 import { WinstonLoggerService } from './winston-logger.service';
 import { UserModule } from './user/user.module';
 
+const ENV = process.env.NODE_ENV;
+
 @Module({
   imports: [
     AuthModule,
     UserModule,
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      envFilePath: ENV!="dev" ? '.env' : `${ENV}.env`,
+    }),
     MongooseModule.forRootAsync({
       useFactory: () => ({
         uri: process.env.MONGO_URI,

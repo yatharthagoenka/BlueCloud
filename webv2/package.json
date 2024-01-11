@@ -53,7 +53,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "dev": "cross-env REACT_APP_API_URL='http://localhost:3000/' PORT=8000 react-scripts start",
+    "dev": "cross-env REACT_APP_API_URL='http://localhost:3001/' PORT=8003 react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

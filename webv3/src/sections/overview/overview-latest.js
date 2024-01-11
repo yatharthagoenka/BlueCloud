@@ -1,4 +1,3 @@
-import React, {useEffect, useState} from 'react';
 import PropTypes from 'prop-types';
 import ArrowRightIcon from '@heroicons/react/24/solid/ArrowRightIcon';
 import {
@@ -17,8 +16,6 @@ import {
 } from '@mui/material';
 import { Scrollbar } from 'src/components/scrollbar';
 import { SeverityPill } from 'src/components/severity-pill';
-import FilesService from 'src/contexts/files-context';
-import { useAuth } from 'src/hooks/use-auth';
 import NextLink from 'next/link';
 
 const statusMap = {

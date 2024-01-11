@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { forwardRef, HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ObjectId } from 'mongodb';
 import { Model } from 'mongoose';
@@ -11,7 +11,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { promisify } from 'util';
 import axios from 'axios';
-import { Exception } from 'ts-httpexceptions';
 
 const deleteFolderUtil = promisify(fs.rm);
 
@@ -20,6 +19,7 @@ export class FilesService {
     constructor(
         @InjectModel('Files') private readonly fileModel: Model<IFile>,
         private readonly loggerService: WinstonLoggerService,
+        @Inject(forwardRef(() => UserService))
         private userService: UserService
     ){}
 
@@ -38,8 +38,7 @@ export class FilesService {
         const { buffer, originalname } = file;
         const extension = extname(originalname);
         const uuid = `${uuidv4()}`;
-        // const tempImagePath = `/home/yatharthagoenka/Desktop/BlueCloud/server/store/uploads/${uuid}`;
-        const tempImagePath = `/app/store/uploads/${uuid}`;
+        const tempImagePath = `${process.env.FILES_STORE_URI}uploads/${uuid}`;
         try {
             return new Promise((resolve, reject) => {
                 const writeStream = fs.createWriteStream(tempImagePath);
@@ -193,22 +192,24 @@ export class FilesService {
     async delete(userID: ObjectId, fileID: ObjectId): Promise<string> {
         const file = await this.fileModel.findById(fileID.toString());
         if(!file) {
-            this.loggerService.error(`File with ID ${fileID} does not exist`)
+            this.loggerService.error(`File with ID ${fileID} does not exist`);
             throw new HttpException('File does not exists', HttpStatus.BAD_REQUEST);
         }
         
         // Deleting from server
         try {
-            await deleteFolderUtil(`store/files/${file.uuid}`, { recursive: true })
-            this.loggerService.info(`store/files : ${file.uuid} : deleted successfully`);
+            await deleteFolderUtil(`${process.env.FILES_STORE_URI}files/${file.uuid}`, { recursive: true });
+            this.loggerService.info(`${process.env.FILES_STORE_URI}files : ${file.uuid} : deleted successfully`);
         }catch (error) {
-            this.loggerService.error(`store/files : ${file.uuid} : ${error}`);
+            this.loggerService.error(`${process.env.FILES_STORE_URI}files : ${file.uuid} : ${error}`);
+            throw new Error(error);
         }
         try{
-            await deleteFolderUtil(`store/gems/${file.uuid}`, { recursive: true })
-            this.loggerService.info(`store/gems : ${file.uuid} : deleted successfully`);
+            await deleteFolderUtil(`${process.env.FILES_STORE_URI}gems/${file.uuid}`, { recursive: true })
+            this.loggerService.info(`${process.env.FILES_STORE_URI}gems : ${file.uuid} : deleted successfully`);
         }catch(error){
-            this.loggerService.error(`store/gems : ${file.uuid} : ${error}`);
+            this.loggerService.error(`${process.env.FILES_STORE_URI}gems : ${file.uuid} : ${error}`);
+            throw new Error(error);
         }
         // Deleting from db
         try{
@@ -217,6 +218,7 @@ export class FilesService {
             this.loggerService.info(`File deleted from db: ${fileID}`);
         }catch(error){
             this.loggerService.error(`Unable to delete file from db: ${error}`);
+            throw new Error(error);
         }
         return file.uuid;
     }

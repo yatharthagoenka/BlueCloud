@@ -8,9 +8,9 @@ RUN npm install --force
 
 ADD . /app
 
-ENV NODE_ENV=dev
+ENV NODE_ENV=test
 
 EXPOSE 3001
-EXPOSE 3002
+# EXPOSE 3002
 
 CMD ["npm", "run", "start"]

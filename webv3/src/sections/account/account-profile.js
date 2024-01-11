@@ -9,7 +9,7 @@ import {
   Typography
 } from '@mui/material';
 import { useEffect, useState } from 'react';
-import FilesService from 'src/contexts/files-context';
+import FilesService from 'src/contexts/app-context';
 
 const user = {
   avatar: '/assets/avatars/avatar-cao-yu.png',
@@ -24,7 +24,7 @@ export const AccountProfile = () => {
   });
 
   useEffect(()=>{
-    FilesService.getUser(auth.user.id, auth.user.token).then(
+    FilesService.getUser(auth.user?.id, auth.user?.token).then(
         response => {
           setValues({
             firstName: response.data.firstName,

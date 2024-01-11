@@ -7,11 +7,11 @@ export const usersRecord = new mongoose.Schema({
     ref: 'Users',
     required: true,
   },
-  role: [{
+  role: {
     type: String,
     enum: [IRole.VIEWER, IRole.EDITOR, IRole.OWNER],
     required: true,
-  }]
+  }
 });
 
 export const FileSchema = new mongoose.Schema({

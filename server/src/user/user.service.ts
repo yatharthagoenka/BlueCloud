@@ -5,12 +5,14 @@ import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
 import { LoginDTO, RegisterDTO } from '../authentication/dto/auth.dto';
 import { IFile, IPayload, IUser } from 'src/interfaces';
+import { FilesService } from 'src/files/files.service';
 
 @Injectable()
 export class UserService {
   constructor( 
     @InjectModel('User') private userModel: Model<IUser>,
-    @InjectModel('Files') private fileModel: Model<IFile>
+    @InjectModel('Files') private fileModel: Model<IFile>,
+    private readonly filesService: FilesService
     ) {}
 
   async create(registerDTO: RegisterDTO) : Promise<IUser> {
@@ -51,6 +53,10 @@ export class UserService {
 
   async editUser(id: string, payload: any){
     const userID = { _id: new ObjectId(id) };
+    if(payload.password){
+      const hashedPassword = await bcrypt.hash(payload.password, 10);
+      payload.password = hashedPassword;
+    }
     const editedUser = await this.userModel.findByIdAndUpdate(userID, payload);
     return editedUser;
   }
@@ -64,17 +70,25 @@ export class UserService {
     );
   }
 
-  async deleteUsersFile(userID: ObjectId, fileID: ObjectId, size: number){
-    await this.userModel.updateMany(
-      { files: { $elemMatch: { fileID: fileID } } },
-      { $pull: { files: { fileID: fileID } } }
-    );
+  async deleteUser(userID: ObjectId, password: string){
     const user = await this.userModel.findById(userID);
-    const updatedStorage = user.storage - size;
-    await this.userModel.updateOne(
-      { _id: userID },
-      { $set: {storage: updatedStorage} }
-    );
+    if(!user) {
+      throw new HttpException('User does not exists', HttpStatus.BAD_REQUEST);
+    }
+    if(await bcrypt.compare(password, user.password)) {
+      try{
+        const files = await this.fileModel.find({ 'users': { $elemMatch: { userID: userID, role: 'owner' } } });
+        for(let file of files) {
+          await this.filesService.delete(userID, new ObjectId(file._id));
+        }
+        await this.userModel.findByIdAndDelete(userID);
+        return user;
+      }catch(error){
+        throw new HttpException(error.message, error.status);
+      }
+    }else{
+      throw new HttpException('Invalid credentials. Try again', HttpStatus.UNAUTHORIZED);
+    }
   }
 
   async getPlatformMetrics(): Promise<Object>{
@@ -96,7 +110,7 @@ export class UserService {
         }
       }
     ]).exec();
-    metricsEntity.storageUsed = Number((storageFinder[0].totalSize/1000).toFixed(2)); // MBs    
+    metricsEntity.storageUsed = Number((storageFinder[0]?.totalSize/1000).toFixed(2)); // MBs    
     const activeSince = new Date('2023-03-20T00:00:00');
     const currentDate = new Date();
     const timeDifference = (currentDate.valueOf() - activeSince.valueOf());

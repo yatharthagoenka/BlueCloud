@@ -5,10 +5,10 @@ import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import { OverviewUsers } from 'src/sections/overview/overview-users';
 import { OverviewFiles } from 'src/sections/overview/overview-files';
 import { OverviewLatestFiles } from 'src/sections/overview/overview-latest';
-import { OverviewDays } from 'src/sections/overview/overview-days';
+import { OverviewMembership } from 'src/sections/overview/overview-membership';
 import { OverviewStorage } from 'src/sections/overview/overview-storage';
 import { OverviewTraffic } from 'src/sections/overview/overview-traffic';
-import FilesService from 'src/contexts/files-context';
+import FilesService from 'src/contexts/app-context';
 import { useAuth } from 'src/hooks/use-auth';
 
 const now = new Date();
@@ -19,13 +19,13 @@ const Page = () => {
   const [metrics, setMetrics] = useState({
     userCount: 0,
     fileCount: 0, 
-    activeDays: 0, 
+    memberSince: 0, 
     storageUsed: 0
   });
 
   useEffect(()=>{
     if(!(files.content && files.content.length)){
-      FilesService.getUserFiles(auth.user.id, auth.user.token).then(
+      FilesService.getUserFiles(auth.user?.id, auth.user?.token).then(
           response => {
             setFiles(response.data.files);
             setMetrics(prevMetrics => ({
@@ -44,7 +44,6 @@ const Page = () => {
             setMetrics(prevMetrics => ({
               ...prevMetrics,
               userCount: response.data.userCount,
-              activeDays: Math.floor(response.data.activeHours/24)
             }));
           }
       );
@@ -52,11 +51,16 @@ const Page = () => {
   }, [])
 
   useEffect(() => {
-    FilesService.getUser(auth.user.id, auth.user.token).then(
+    FilesService.getUser(auth.user?.id, auth.user?.token).then(
       response => {
-        setMetrics(prevMetrics => ({
+          setMetrics(prevMetrics => ({
           ...prevMetrics,
-          storageUsed: Number((response.data.storage/1000).toFixed(2))
+          storageUsed: Number((response.data.storage/1000).toFixed(2)),
+          memberSince: new Date(response.data.createdAt).toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          })
         }));
       }
     );
@@ -119,9 +123,9 @@ const Page = () => {
             sm={6}
             lg={3}
           >
-            <OverviewDays
+            <OverviewMembership
               sx={{ height: '100%' }}
-              value={metrics.activeDays}
+              value={metrics.memberSince}
             />
           </Grid>
           <Grid

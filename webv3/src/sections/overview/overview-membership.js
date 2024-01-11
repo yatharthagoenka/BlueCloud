@@ -1,7 +1,7 @@
 import ClockIcon from '@heroicons/react/24/solid/ClockIcon';
 import { Avatar, Card, CardContent, Stack, SvgIcon, Typography } from '@mui/material';
 
-export const OverviewDays = (props) => {
+export const OverviewMembership = (props) => {
   const { sx, value } = props;
 
   return (
@@ -18,7 +18,7 @@ export const OverviewDays = (props) => {
               color="text.secondary"
               variant="overline"
             >
-              Service Active Days
+              Member Since
             </Typography>
             <Typography variant="h4">
               {value}

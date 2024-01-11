@@ -25,7 +25,7 @@ export const SettingsNotifications = () => {
     <form onSubmit={handleSubmit}>
       <Card>
         <CardHeader
-          subheader="Manage the notifications"
+          subheader="(beta - upcoming)"
           title="Notifications"
         />
         <Divider />
@@ -45,19 +45,19 @@ export const SettingsNotifications = () => {
                   Notifications
                 </Typography>
                 <Stack>
-                  <FormControlLabel
+                  <FormControlLabel disabled
                     control={<Checkbox defaultChecked />}
                     label="Email"
                   />
-                  <FormControlLabel
+                  <FormControlLabel disabled
                     control={<Checkbox defaultChecked />}
                     label="Push Notifications"
                   />
-                  <FormControlLabel
+                  <FormControlLabel disabled
                     control={<Checkbox />}
                     label="Text Messages"
                   />
-                  <FormControlLabel
+                  <FormControlLabel disabled
                     control={<Checkbox defaultChecked />}
                     label="Phone calls"
                   />
@@ -75,15 +75,15 @@ export const SettingsNotifications = () => {
                   Messages
                 </Typography>
                 <Stack>
-                  <FormControlLabel
+                  <FormControlLabel disabled
                     control={<Checkbox defaultChecked />}
                     label="Email"
                   />
-                  <FormControlLabel
+                  <FormControlLabel disabled
                     control={<Checkbox />}
                     label="Push Notifications"
                   />
-                  <FormControlLabel
+                  <FormControlLabel disabled
                     control={<Checkbox defaultChecked />}
                     label="Phone calls"
                   />
@@ -94,7 +94,7 @@ export const SettingsNotifications = () => {
         </CardContent>
         <Divider />
         <CardActions sx={{ justifyContent: 'flex-end' }}>
-          <Button variant="contained">
+          <Button variant="contained" disabled>
             Save
           </Button>
         </CardActions>

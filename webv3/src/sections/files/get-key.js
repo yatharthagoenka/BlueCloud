@@ -8,7 +8,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import { OutlinedInput } from '@mui/material';
 import DialogTitle from '@mui/material/DialogTitle';
-import FilesService from 'src/contexts/files-context';
+import FilesService from 'src/contexts/app-context';
 
 export const GetKeyDialog = (props) => {
   const { open, fileID, userID, token, onClose, editFileAccess } = props;

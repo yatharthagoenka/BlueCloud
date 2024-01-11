@@ -7,7 +7,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { DownloadWithKey } from './key-download';
 import { GetKeyDialog } from './get-key';
-import FilesService from 'src/contexts/files-context';
+import FilesService from 'src/contexts/app-context';
 
 export const FilesCard = (props) => {
   const { file, user, onDelete, editFileAccess} = props;
@@ -19,7 +19,7 @@ export const FilesCard = (props) => {
     if(!file.rsa_priv_base64){
       setUseKeyDialog(true);
     }else{
-        FilesService.downloadFile(file._id, '',user.token).then(
+        FilesService.downloadFile(file._id, '',user?.token).then(
             response => {
                 const url = window.URL.createObjectURL(new Blob([response.data]));
                 const link = document.createElement('a');
@@ -60,7 +60,7 @@ export const FilesCard = (props) => {
   };
 
   const deleteFile = () => {
-    FilesService.deleteFile(user.id, file._id, user.token).then(
+    FilesService.deleteFile(user?.id, file._id, user?.token).then(
         response => {
           onDelete(file._id);
         },
@@ -89,12 +89,12 @@ export const FilesCard = (props) => {
       <GetKeyDialog 
         open={getKeyDialog} 
         fileID={file._id} 
-        userID={user.id} 
-        token={user.token} 
+        userID={user?.id} 
+        token={user?.token} 
         onClose={handleGetKeyClose} 
         editFileAccess={editFileAccess}
       />
-      <DownloadWithKey open={useKeyDialog} file={file} token={user.token} onClose={handleFileDownloadClose}/>
+      <DownloadWithKey open={useKeyDialog} file={file} token={user?.token} onClose={handleFileDownloadClose}/>
       <CardContent>
         <Stack
           alignItems="flex-start"

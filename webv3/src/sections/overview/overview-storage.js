@@ -48,6 +48,12 @@ export const OverviewStorage = (props) => {
           </Avatar>
         </Stack>
         <Box sx={{ mt: 3 }}>
+          <Typography
+            color="text.secondary"
+            variant="caption"
+          >
+            Max: 100 MBs
+          </Typography>
           <LinearProgress
             value={value}
             variant="determinate"

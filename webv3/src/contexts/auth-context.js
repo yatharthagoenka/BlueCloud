@@ -162,13 +162,36 @@ export const AuthProvider = (props) => {
     window.sessionStorage.setItem('user', null);
   };
 
+  const deleteAccount = async (userID, password, authToken) => {
+    await axios.post(process.env.NEXT_PUBLIC_BACKEND_URL + 'user/delete', {password}, {
+      headers: {
+        Authorization: `Bearer ${authToken}`
+      },
+      params:{
+        userID
+      },
+      data: {
+        password
+      }
+    }).then(response => {
+        dispatch({
+          type: HANDLERS.SIGN_OUT,
+        });
+        window.sessionStorage.setItem('authenticated', 'false');
+        window.sessionStorage.setItem('user', null);
+      }).catch(error =>{
+        throw new Error(error);
+      })
+  };
+
   return (
     <AuthContext.Provider
       value={{
         ...state,
         signIn,
         signUp,
-        signOut
+        signOut,
+        deleteAccount
       }}
     >
       {children}

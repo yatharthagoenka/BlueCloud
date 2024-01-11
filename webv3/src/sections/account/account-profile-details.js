@@ -10,7 +10,7 @@ import {
   TextField,
   Unstable_Grid2 as Grid
 } from '@mui/material';
-import FilesService from 'src/contexts/files-context';
+import FilesService from 'src/contexts/app-context';
 import { useAuth } from 'src/hooks/use-auth';
 
 export const AccountProfileDetails = () => {
@@ -23,7 +23,7 @@ export const AccountProfileDetails = () => {
   });
 
   useEffect(()=>{
-    FilesService.getUser(auth.user.id, auth.user.token).then(
+    FilesService.getUser(auth.user?.id, auth.user?.token).then(
         response => {
           setValues({
             firstName: response.data.firstName,
@@ -47,14 +47,18 @@ export const AccountProfileDetails = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    await FilesService.updateUser(values, auth.user.id, auth.user.token).then(
-      response => {
-        console.log("User updated successfully")
-      },
-      error => {
-        console.log(error)
-      }
-    );
+    try{
+      await FilesService.updateUser(values, auth.user?.id, auth.user?.token).then(
+        response => {
+          console.log("User updated successfully")
+        },
+        error => {
+          console.log(error)
+        }
+      );
+    }catch(error){
+      console.log(error);
+    }
   }
 
   return (

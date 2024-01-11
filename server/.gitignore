@@ -1,5 +1,6 @@
 # env
 .env
+dev.env
 
 # compiled output
 dist
