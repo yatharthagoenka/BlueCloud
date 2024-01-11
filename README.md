@@ -8,8 +8,7 @@
 ![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)
-![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
-![NextJS](https://img.shields.io/badge/nextjs-%2320232a.svg?style=for-the-badge&logo=nextjs&logoColor=%2361DAFB)
+![NextJS](https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
 ![JWT](https://img.shields.io/badge/JWT-black?style=for-the-badge&logo=JSON%20web%20tokens)
 ![Bootstrap](https://img.shields.io/badge/bootstrap-%23563D7C.svg?style=for-the-badge&logo=bootstrap&logoColor=white)
 
@@ -17,9 +16,9 @@ A cryptographic cloud-based file storage system.
 
 Check it out [here 🔗](http://3.104.70.53/)
 
-<img src="webv2\public\landing-page.png" align="left" width="450" hspace="10" vspace="10">
+<img src="landing\assets\img\landing-page.png" align="left" width="450" hspace="10" vspace="10">
 
-BlueCloud is a cryptography-based cloud storage platform that allows users to upload, store, and share files securely. The application provides users with a simple and intuitive interface to manage their files. Users can upload files, view, download, and share files with others. The application also provides features such as user authentication and authorization and file permissions. With BlueCloud, users can access their files from anywhere and on any device, making it a convenient and reliable solution for managing files in the cloud. 
+BlueCloud is a cryptography-based cloud storage platform that allows users to upload, store, and share files securely. The application provides users with a simple and intuitive interface to manage their files. Users can upload, manage, secure and download files with ease. The application also provides features such as user authentication and authorization and control over file access permissions. With BlueCloud, users can access their files from anywhere and on any device, making it a convenient and reliable solution for managing files in the cloud. 
 
 The application is built as using the microservices architecture, deployed over `AWS` using the following technologies:
 - Backend
@@ -33,7 +32,6 @@ The application is built as using the microservices architecture, deployed over 
 
 - Frontend
   - <img alt="NextJS" src="https://img.shields.io/badge/NextJS-•-brown" />
-  - <img alt="ReactJS" src="https://img.shields.io/badge/ReactJS-•-red" />
   - <img alt="Bootstrap" src="https://img.shields.io/badge/Bootstrap-•-black" /> 
   - <img alt="Axios" src="https://img.shields.io/badge/Axios-•-orange" />
   - <img alt="MUI" src="https://img.shields.io/badge/MUI-•-brown" />

@@ -28,22 +28,22 @@ services:
       - store-vol:/app/store
     networks:
       - bcloud-net
-  app2:
-    image: server_app
-    container_name: app_2
-    build: .
-    ports:
-      - "3002:3002"
-    environment:
-      - DB_INIT=false
-      - SERVER_PORT=3002
-      - MONGO_URI=mongodb://db:27017
-    depends_on:
-      - db
-    volumes:
-      - store-vol:/app/store
-    networks:
-      - bcloud-net
+  # app2:
+  #   image: server_app
+  #   container_name: app_2
+  #   build: .
+  #   ports:
+  #     - "3002:3002"
+  #   environment:
+  #     - DB_INIT=false
+  #     - SERVER_PORT=3002
+  #     - MONGO_URI=mongodb://db:27017
+  #   depends_on:
+  #     - db
+  #   volumes:
+  #     - store-vol:/app/store
+  #   networks:
+  #     - bcloud-net
   nginx:
     build:
       context: .
@@ -54,7 +54,7 @@ services:
       - bcloud-net
     depends_on:
       - app1
-      - app2
+      # - app2
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
 volumes:
