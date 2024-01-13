@@ -126,7 +126,7 @@ export class FilesService {
             role: IRole.OWNER
         }
         const createFileDTO : IFile = {
-            originalname: `${savedFile.originalname}${savedFile.extension}`,
+            originalname: `${savedFile.originalname}`,
             uuid: `${savedFile.uuid}`,
             rsa_priv_base64: `${rsa_priv_base64}`,
             size: fileSize,
